@@ -1,0 +1,219 @@
+# This script compresses images on your Cloudinary account to a target file size range.
+#
+# IMPORTANT:
+# 1. Install the Cloudinary Python SDK: pip install cloudinary
+# 2. Save this script (e.g., as compress_cloudinary.py)
+# 3. Run this script: python compress_cloudinary.py
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+import time
+import os
+
+# --- Cloudinary Configuration ---
+# Your Cloudinary details directly embedded as requested.
+# WARNING: Embedding credentials directly is not recommended for production environments.
+# Consider using environment variables for better security.
+CLOUD_NAME = "dbm2s6xd2"
+API_KEY = "218734287148154"
+API_SECRET = "ejENat-KCgRkxZMacy7FiAFBAf8"
+
+# --- Compression Configuration ---
+# Target file size range in KB
+TARGET_MIN_KB = 35
+TARGET_MAX_KB = 50
+
+# Maximum number of images to process in one run (for testing, set a lower number)
+# Set to None to process all images (use with caution for large accounts)
+MAX_IMAGES_TO_PROCESS = None # Set to a number like 10 for testing, or None for all
+
+# Initialize Cloudinary using the provided credentials
+try:
+    cloudinary.config(
+        cloud_name=CLOUD_NAME,
+        api_key=API_KEY,
+        api_secret=API_SECRET,
+        secure=True # Ensures URLs are HTTPS
+    )
+    print("Cloudinary configured successfully.")
+except Exception as e:
+    print(f"Error configuring Cloudinary: {e}")
+    print("Please double-check your Cloudinary credentials.")
+    exit()
+
+def compress_and_upload_image(public_id, current_bytes):
+    """
+    Compresses an image using Cloudinary transformations and overwrites the original.
+    Tries to achieve the target KB size by adjusting quality and then dimensions.
+    """
+    print(f"\nProcessing image: {public_id}. Current size: {current_bytes / 1024:.2f} KB")
+
+    current_quality = 60 # Start with a moderate quality
+    max_retries = 10 # More retries to fine-tune
+    transformed_bytes = current_bytes # Start with original size
+
+    for retry in range(max_retries):
+        print(f"  Attempt {retry + 1}: Quality={current_quality}%")
+        try:
+            # Overwrite the existing image with new transformations
+            response = cloudinary.uploader.upload(
+                public_id, # This is the source asset (its public_id)
+                public_id=public_id, # This is the target public_id (overwrite)
+                overwrite=True,
+                invalidate=True, # Invalidate CDN cache for the old image
+                resource_type="image",
+                format="jpg", # Force JPEG for better compression control
+                quality=current_quality,
+                # If scaling is needed later, we can add width/height here
+            )
+
+            if response and 'bytes' in response:
+                transformed_bytes = response['bytes']
+                transformed_kb = transformed_bytes / 1024
+                print(f"  Transformed size: {transformed_kb:.2f} KB")
+
+                if TARGET_MIN_KB <= transformed_kb <= TARGET_MAX_KB:
+                    print(f"  SUCCESS: Image {public_id} compressed to {transformed_kb:.2f} KB (within target range).")
+                    return True
+                elif transformed_kb > TARGET_MAX_KB:
+                    print("  Still too large. Reducing quality further or scaling.")
+                    # Reduce quality more aggressively if still too large
+                    current_quality = max(10, current_quality - 10)
+                    if current_quality <= 10 and transformed_kb > TARGET_MAX_KB:
+                        # If quality is already very low and still too large, try scaling down
+                        print("  Quality too low, attempting to scale down.")
+                        original_width = response.get('width')
+                        original_height = response.get('height')
+                        if original_width and original_height:
+                            # Calculate a new target resolution based on remaining size difference
+                            # This is an approximation. sqrt(target_bytes / current_bytes)
+                            scale_factor = (TARGET_MAX_KB / transformed_kb) ** 0.5
+                            new_width = int(original_width * scale_factor)
+                            new_height = int(original_height * scale_factor)
+                            print(f"  Scaling from {original_width}x{original_height} to {new_width}x{new_height}")
+                            response = cloudinary.uploader.upload(
+                                public_id,
+                                public_id=public_id,
+                                overwrite=True,
+                                invalidate=True,
+                                resource_type="image",
+                                format="jpg",
+                                quality=max(current_quality, 10), # Keep quality low or at minimum 10
+                                width=new_width,
+                                height=new_height,
+                                crop="limit" # Ensure image fits within new dimensions
+                            )
+                            if response and 'bytes' in response:
+                                transformed_bytes = response['bytes']
+                                transformed_kb = transformed_bytes / 1024
+                                print(f"  Scaled size: {transformed_kb:.2f} KB")
+                                if TARGET_MIN_KB <= transformed_kb <= TARGET_MAX_KB:
+                                    print(f"  SUCCESS: Image {public_id} compressed to {transformed_kb:.2f} KB (within target range after scaling).")
+                                    return True
+                                else:
+                                    print("  Still outside range after scaling. Giving up for this image.")
+                                    return False # Give up if scaling doesn't work
+                            else:
+                                print("  Scaling upload failed.")
+                                return False
+                        else:
+                            print("  Could not get original dimensions for scaling.")
+                            return False # Cannot scale if dimensions are unknown
+                elif transformed_kb < TARGET_MIN_KB:
+                    print("  Too small. Increasing quality (if possible).")
+                    current_quality = min(90, current_quality + 5) # Increase quality, but not above 90
+                    # If quality is already high and still too small, might be hard to increase size
+                    if current_quality >= 90 and transformed_kb < TARGET_MIN_KB and retry == max_retries -1:
+                         print("  Quality already high and still too small. Cannot increase size further.")
+                         return False # Cannot increase size further if quality is maxed
+            else:
+                print(f"  Upload response for {public_id} missing 'bytes' or failed.")
+                return False # Failed to get size, something went wrong
+
+            time.sleep(0.5) # Small delay between retries
+
+    print(f"  FAILED: Could not compress {public_id} to target range after {max_retries} attempts. Final size: {transformed_bytes / 1024:.2f} KB")
+    return False
+
+def main():
+    """
+    Main function to fetch images and initiate compression.
+    """
+    print(f"Starting Cloudinary image compression to {TARGET_MIN_KB}-{TARGET_MAX_KB} KB...")
+    compressed_count = 0
+    skipped_count = 0
+    failed_count = 0
+    processed_count = 0
+
+    next_cursor = None
+    has_more = True
+
+    while has_more and (MAX_IMAGES_TO_PROCESS is None or processed_count < MAX_IMAGES_TO_PROCESS):
+        try:
+            # List resources with a limit and cursor for pagination
+            # 'type': 'upload' filters for images uploaded directly
+            # 'max_results': 100 is a good page size
+            # 'prefix': "gym_member_photos_preset/" - Adjust this if your photos are in a different folder
+            result = cloudinary.api.resources(
+                type="upload",
+                prefix="gym_member_photos_preset/", # Assuming your photos are in this folder/prefix
+                max_results=100,
+                next_cursor=next_cursor,
+                resource_type="image"
+            )
+
+            resources = result.get('resources', [])
+            next_cursor = result.get('next_cursor')
+            has_more = bool(next_cursor)
+
+            if not resources:
+                print("No more images found.")
+                break
+
+            for resource in resources:
+                if MAX_IMAGES_TO_PROCESS is not None and processed_count >= MAX_IMAGES_TO_PROCESS:
+                    print(f"Reached maximum images to process ({MAX_IMAGES_TO_PROCESS}). Stopping.")
+                    break
+
+                public_id = resource.get('public_id')
+                bytes_size = resource.get('bytes') # Size in bytes
+
+                if not public_id or bytes_size is None: # Check for None explicitly
+                    print(f"Skipping resource with missing public_id or bytes: {resource}")
+                    skipped_count += 1
+                    continue
+
+                current_kb = bytes_size / 1024
+
+                if TARGET_MIN_KB <= current_kb <= TARGET_MAX_KB:
+                    print(f"Image {public_id} is already within target range ({current_kb:.2f} KB). Skipping.")
+                    skipped_count += 1
+                else:
+                    print(f"Image {public_id} needs compression. Current size: {current_kb:.2f} KB")
+                    if compress_and_upload_image(public_id, bytes_size):
+                        compressed_count += 1
+                    else:
+                        failed_count += 1
+                processed_count += 1
+
+                # Small delay to avoid hitting API rate limits
+                time.sleep(0.5)
+
+        except cloudinary.exceptions.Error as e:
+            print(f"Cloudinary API error while listing resources: {e}")
+            break
+        except Exception as e:
+            print(f"An unexpected error occurred in main loop: {e}")
+            break
+
+    print("\n--- Compression Summary ---")
+    print(f"Total images processed: {processed_count}")
+    print(f"Successfully compressed: {compressed_count}")
+    print(f"Skipped (already in range): {skipped_count}")
+    print(f"Failed to compress: {failed_count}")
+    print("--------------------------")
+    print("Please verify your Cloudinary Media Library for changes.")
+
+if __name__ == "__main__":
+    main()
