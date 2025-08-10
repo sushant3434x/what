@@ -1,904 +1,573 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>WB Business Sender</title>
-<meta name="theme-color" content="#071025"/>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b84ff'/%3E%3Ctext x='50%25' y='55%25' fill='white' font-size='12' text-anchor='middle' font-family='sans-serif'%3EWB%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#1e88e5" />
 <style>
-:root{--bg:#071025;--accent:#0b84ff;--muted:#9aa4b2;color:#eaf3ff;font-family:Inter,system-ui,Arial}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,var(--bg),#071427);color:var(--color);padding:12px;-webkit-font-smoothing:antialiased}
-.container{max-width:820px;margin:0 auto}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.brand{font-weight:700;color:var(--accent)}
-.card{background:rgba(255,255,255,0.02);padding:12px;border-radius:12px;margin-bottom:12px}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-input,textarea,button{font:inherit}
-input,textarea{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;color:inherit;width:100%}
-textarea{min-height:96px}
-.btn{background:var(--accent);color:#012;border:0;padding:10px;border-radius:10px;cursor:pointer}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-.big{font-size:16px;padding:12px;width:100%}
-.small{font-size:13px;color:var(--muted)}
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px}
-.checkbox-col{width:40px;text-align:center}
-.attachment{display:inline-flex;flex-direction:column;align-items:center;gap:6px;margin:6px}
-.attachment img{max-width:80px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
-.notice{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:999}
-.modal .panel{width:94%;max-width:760px;background:#071425;padding:12px;border-radius:12px}
-.footer{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+  :root {
+    --bg: #f9fafb;
+    --primary: #1e88e5;
+    --text: #222;
+    --muted: #666;
+    --card-bg: #fff;
+    --border: #ddd;
+    --danger: #e53935;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0; padding: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .app {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--primary);
+    text-align: center;
+  }
+  section {
+    background: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: 0 3px 7px rgb(30 136 229 / 0.15);
+    padding: 15px 20px;
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  input[type="text"],
+  input[type="number"],
+  textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    resize: vertical;
+  }
+  textarea {
+    min-height: 80px;
+  }
+  button {
+    background: var(--primary);
+    border: none;
+    padding: 12px 18px;
+    color: white;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background: #1565c0;
+  }
+  button.ghost {
+    background: transparent;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+  }
+  button.ghost:hover {
+    background: var(--primary);
+    color: white;
+  }
+  .row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .row > * {
+    flex: 1;
+  }
+  .row > button {
+    flex: 0 0 auto;
+    min-width: 120px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  th {
+    text-align: left;
+    color: var(--muted);
+  }
+  td input[type="text"] {
+    width: 100%;
+    font-size: 14px;
+    padding: 6px 8px;
+    margin: 0;
+  }
+  .checkbox-col {
+    width: 32px;
+    text-align: center;
+  }
+  .attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .attachment-item img {
+    max-width: 60px;
+    max-height: 60px;
+    border-radius: 6px;
+    object-fit: contain;
+    border: 1px solid var(--border);
+  }
+  .attachment-item > div {
+    flex: 1;
+  }
+  .attachment-item button {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  #previewArea {
+    max-height: 220px;
+    overflow-y: auto;
+    background: #e3f2fd;
+    border-radius: 8px;
+    padding: 10px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    margin-bottom: 10px;
+  }
+  footer {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  /* PWA install banner styles if needed */
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header"><div class="brand">WB Business Sender</div><div class="small">Open in Chrome on Android</div></div>
+<div class="app" role="main" aria-label="WhatsApp Business Sender app">
+  <h1>WB Business Sender</h1>
 
-  <section class="card">
-    <input id="campName" placeholder="Campaign name (optional)"/>
-    <div style="height:8px"></div>
-    <textarea id="campMsg" placeholder="Message template — use {{name}}"></textarea>
-    <div style="height:8px"></div>
+  <!-- Contacts Section -->
+  <section aria-label="Contacts section">
+    <label for="fileInput">Import Contacts from Broadcast ZIP or TXT/CSV</label>
     <div class="row">
-      <input id="attachHint" placeholder="Attachment hint (filename)"/>
-      <button id="saveCamp" class="btn ghost">Save</button>
-      <button id="loadCamp" class="btn ghost">Load</button>
+      <input id="fileInput" type="file" accept=".zip,.txt,.csv" aria-describedby="fileHelp" />
+      <button id="importBtn" type="button">Import</button>
     </div>
+    <small id="fileHelp" style="display:block;margin-top:-10px;margin-bottom:10px;color:#555;font-size:13px;">
+      Upload WhatsApp Business broadcast export (.zip with .txt inside) or text list
+    </small>
+
+    <label for="manualNumbers">Paste or Enter Numbers (one per line)</label>
+    <div class="row">
+      <textarea id="manualNumbers" placeholder="e.g. 919876543210" rows="3"></textarea>
+      <button id="pasteBtn" type="button">Add</button>
+    </div>
+
+    <label for="customNumber">Add Custom Number</label>
+    <div class="row" style="margin-bottom:12px;">
+      <input id="customNumber" type="text" placeholder="Phone number (with country code)" aria-label="Custom phone number" />
+      <input id="customName" type="text" placeholder="Name (optional)" aria-label="Custom contact name" />
+      <button id="addCustom" type="button">Add</button>
+    </div>
+
+    <label>Contacts List</label>
+    <table aria-label="Contacts list" id="contactsTable" role="grid">
+      <thead>
+        <tr>
+          <th class="checkbox-col"><input id="selectAll" type="checkbox" aria-label="Select all contacts" /></th>
+          <th>Name</th>
+          <th>Phone Number</th>
+          <th>Edit Message</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </section>
 
-  <section class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div><strong>Contacts</strong><div class="small">Import broadcast .zip / paste / add manually</div></div>
-      <div><button id="exportNumbers" class="btn">Export (.txt)</button></div>
-    </div>
-
-    <div style="height:8px"></div>
-    <div class="row">
-      <input id="fileInput" type="file" accept=".zip,.txt,.vcf,.csv"/>
-      <button id="importBtn" class="btn big">Import File</button>
-    </div>
-
-    <div style="height:8px"></div>
-    <div class="row">
-      <input id="customNumber" placeholder="Add number e.g. 919876543210" style="width:60%"/>
-      <input id="customName" placeholder="Name (optional)" style="width:35%"/>
-      <button id="addCustom" class="btn">Add</button>
-    </div>
-
-    <div style="height:8px"></div>
-    <div style="max-height:260px;overflow:auto">
-      <table class="table" id="contactsTable">
-        <thead><tr><th class="checkbox-col"><input id="selectAll" type="checkbox"/></th><th>Phone</th><th>Name</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
+  <!-- Message Section -->
+  <section aria-label="Message section">
+    <label for="defaultMsg">Default Message (can use {{name}} for personalization)</label>
+    <textarea id="defaultMsg" rows="4" placeholder="Enter message here..."></textarea>
   </section>
 
-  <section class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div><strong>Attachments</strong><div class="small">Upload for quick access</div></div>
-      <div><input id="attachFileInput" type="file"/></div>
-    </div>
-
-    <div id="attachmentList" style="margin-top:8px"></div>
-
-    <div style="height:8px"></div>
-    <div class="row" style="align-items:center">
-      <div style="flex:1">
-        <label class="small">Bulk gap (ms)</label>
-        <input id="bulkGap" type="number" value="2000"/>
-      </div>
-      <div style="width:220px">
-        <button id="prepareBtn" class="btn big">Prepare</button>
-      </div>
-    </div>
-
-    <div style="height:8px"></div>
-    <div class="row">
-      <button id="sendAll" class="btn big">Send All (reuses one window)</button>
-      <button id="sendOne" class="btn ghost big">Send One-by-One</button>
-      <button id="stopOne" class="btn ghost big" style="display:none">Stop</button>
-    </div>
-
-    <div style="height:8px"></div>
-    <div id="preview" class="notice">Press Prepare to see preview.</div>
+  <!-- Attachments Section -->
+  <section aria-label="Attachments section">
+    <label for="attachFileInput">Upload Attachments</label>
+    <input id="attachFileInput" type="file" multiple aria-describedby="attachHelp" />
+    <small id="attachHelp" style="display:block;margin-top:6px;margin-bottom:12px;color:#555;font-size:13px;">
+      Upload multiple images or files. Download or use attachment hint when sending.
+    </small>
+    <div id="attachmentList" aria-live="polite" aria-relevant="additions"></div>
   </section>
 
-  <div class="footer">Tap a contact row checkbox to select. Test on Android with WhatsApp Business installed.</div>
+  <!-- Controls Section -->
+  <section aria-label="Send controls" style="text-align:center;">
+    <button id="prepareBtn" type="button">Prepare Messages</button>
+    <button id="sendAll" type="button" disabled>Send All</button>
+    <button id="exportSent" type="button">Export Sent Numbers</button>
+  </section>
+
+  <div id="status" role="status" aria-live="polite" style="margin-top:12px;color:#1e88e5;font-weight:600;text-align:center;"></div>
+
 </div>
 
-<!-- One-by-one modal -->
-<div id="oneModal" class="modal"><div class="panel">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div><strong>One-by-One</strong><div class="small">Return to app → countdown → next opens</div></div>
-    <div><button id="closeOne" class="btn ghost">Close</button></div>
-  </div>
-  <div id="oneList" style="max-height:50vh;overflow:auto;margin-top:8px"></div>
-  <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-    <div class="small">Countdown (s)</div>
-    <input id="oneCountdown" type="number" value="3" style="width:70px"/>
-    <div style="flex:1"></div>
-    <button id="oneNext" class="btn ghost">Next</button>
-    <button id="oneStart" class="btn">Start</button>
-    <button id="oneStopBtn" class="btn ghost">Stop</button>
-  </div>
-</div></div>
-
-<!-- JSZip CDN -->
+<!-- JSZip -->
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
 <script>
-/* WB Business Sender - single HTML (mobile-first)
- - uses whatsapp-business://send?phone=...&text=...
- - import .zip (JSZip), attachments stored in IndexedDB
- - export selected numbers (numbers.txt)
-*/
+(() => {
+  // Helpers
+  const $ = id => document.getElementById(id);
+  const sleep = ms => new Promise(res => setTimeout(res, ms));
+  const normPhone = s => (s || '').replace(/[^0-9+]/g, '');
+  const esc = s => ('' + s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // State
+  let contacts = []; // {phone,name,message,selected}
+  let attachments = []; // {id,name,dataUrl}
+  let prepared = [];
+  let sentPhones = JSON.parse(localStorage.getItem('wb_sent')||'[]');
+  let controllerWindow = null;
+  let sendIndex = 0;
+  let sendingActive = false;
+  let delayMs = 1000;
 
-// --- IndexedDB (attachments) ---
-function openDB(){ return new Promise((res,rej)=>{ const rq = indexedDB.open('wb_db',1); rq.onupgradeneeded = e => { const db = e.target.result; if(!db.objectStoreNames.contains('attachments')) db.createObjectStore('attachments',{keyPath:'id'}); }; rq.onsuccess = ()=> res(rq.result); rq.onerror = ()=> rej(rq.error); }); }
-async function putAttachment(obj){ const db=await openDB(); return new Promise((res,rej)=>{ const tx = db.transaction('attachments','readwrite'); tx.objectStore('attachments').put(obj); tx.oncomplete = ()=> res(true); tx.onerror = ()=> rej(tx.error); }); }
-async function getAttachments(){ const db=await openDB(); return new Promise((res,rej)=>{ const tx = db.transaction('attachments','readonly'); const req = tx.objectStore('attachments').getAll(); req.onsuccess = ()=> res(req.result||[]); req.onerror = ()=> rej(req.error); }); }
-async function delAttachment(id){ const db=await openDB(); return new Promise((res,rej)=>{ const tx = db.transaction('attachments','readwrite'); tx.objectStore('attachments').delete(id); tx.oncomplete = ()=> res(true); tx.onerror = ()=> rej(tx.error); }); }
+  // UI Elements
+  const contactsTbody = $('contactsTable').querySelector('tbody');
+  const statusEl = $('status');
+  const sendAllBtn = $('sendAll');
 
-// --- helpers ---
-const $ = id => document.getElementById(id);
-function normPhone(s){ return (s||'').replace(/[^0-9+]/g,''); }
-function esc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+  // Render contacts list
+  function renderContacts(){
+    contactsTbody.innerHTML = '';
+    contacts.forEach((c,i) => {
+      const tr = document.createElement('tr');
 
-// --- state ---
-let contacts = []; // {phone,name,selected}
-let prepared = [];
-let attachments = [];
-let controllerWindow = null;
-let oneIndex = 0, oneActive = false, visTimer = null;
-
-// --- render contacts ---
-function renderContacts(){ const tbody = document.querySelector('#contactsTable tbody'); tbody.innerHTML=''; contacts.forEach((c,i)=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td class="checkbox-col"><input type="checkbox" ${c.selected?'checked':''} data-i="${i}" class="sel"></td><td>${esc(c.phone)}</td><td>${esc(c.name||'')}</td><td><button data-remove="${i}" class="btn ghost">Remove</button></td>`; tbody.appendChild(tr); }); }
-document.addEventListener('click',(e)=>{ const rem=e.target.getAttribute('data-remove'); if(rem!=null){ contacts.splice(Number(rem),1); renderContacts(); return; } if(e.target.classList && e.target.classList.contains('sel')){ const i=Number(e.target.dataset.i); contacts[i].selected = e.target.checked; return; }});
-$('selectAll').addEventListener('change',e=>{ contacts.forEach(c=>c.selected=e.target.checked); renderContacts(); });
-
-// --- import file handler ---
-$('importBtn').addEventListener('click', async ()=>{
-  const f = $('fileInput').files[0];
-  if(!f){ const paste = prompt('Paste numbers or chat text:'); if(paste) extractNumbersFromText(paste); return; }
-  const name = f.name.toLowerCase();
-  try{
-    if(name.endsWith('.zip')){
-      const ab = await f.arrayBuffer();
-      const zip = await JSZip.loadAsync(ab);
-      const txtKey = Object.keys(zip.files).find(k=>k.toLowerCase().endsWith('.txt')||k.toLowerCase().endsWith('.csv'));
-      if(!txtKey){ alert('No .txt/.csv found in ZIP'); return; }
-      const text = await zip.file(txtKey).async('string');
-      extractNumbersFromText(text);
-      alert('Parsed numbers from ' + txtKey);
-    } else {
-      const text = await f.text();
-      extractNumbersFromText(text);
-      alert('Parsed file');
-    }
-  }catch(err){ console.error(err); alert('Import failed: ' + (err && err.message ? err.message : err)); }
-});
-
-// --- extract numbers ---
-function extractNumbersFromText(text){
-  const found=[];
-  (text.split(/\r?\n/)).forEach(line=>{ const m=line.match(/([+]?[\d\-\(\)\s]{6,})/g); if(m) m.forEach(t=>found.push(t.replace(/[^\d+]/g,''))); });
-  if(found.length===0){ const fb=text.match(/([+]?[\d]{6,})/g)||[]; fb.forEach(t=>found.push(t)); }
-  Array.from(new Set(found)).forEach(p=>{ const np=normPhone(p); if(!np) return; const key=np.replace(/[^0-9]/g,''); if(!contacts.some(c=>c.phone.replace(/[^0-9]/g,'')===key)) contacts.push({phone:np,name:'',selected:true}); });
-  renderContacts();
-}
-
-// --- custom add ---
-$('addCustom').addEventListener('click',()=>{ const p=normPhone($('customNumber').value.trim()); const n=$('customName').value.trim(); if(!p){ alert('Enter a valid number'); return; } const key=p.replace(/[^0-9]/g,''); if(contacts.some(c=>c.phone.replace(/[^0-9]/g,'')===key)){ alert('Already added'); return; } contacts.push({phone:p,name:n,selected:true}); $('customNumber').value=''; $('customName').value=''; renderContacts(); });
-
-// --- attachments handlers ---
-$('attachFileInput').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev=>{ const id='att_'+Date.now(); await putAttachment({id,name:f.name,dataUrl:ev.target.result}); await loadAttachments(); alert('Saved: '+f.name); }; r.readAsDataURL(f); });
-async function loadAttachments(){ attachments = await getAttachments(); renderAttachments(); }
-function renderAttachments(){ const wrap = $('attachmentList'); wrap.innerHTML=''; attachments.forEach(a=>{ const d=document.createElement('div'); d.className='attachment'; const img=document.createElement('img'); img.src=a.dataUrl; const lab=document.createElement('div'); lab.className='small'; lab.textContent=a.name; const row=document.createElement('div'); row.className='row'; const dl=document.createElement('a'); dl.href=a.dataUrl; dl.download=a.name; dl.className='btn ghost'; dl.textContent='Download'; const use=document.createElement('button'); use.className='btn'; use.textContent='Use'; use.onclick=()=>{ $('attachHint').value=a.name; alert('Hint set: '+a.name); }; const del=document.createElement('button'); del.className='btn ghost'; del.textContent='Delete'; del.onclick=async ()=>{ await delAttachment(a.id); await loadAttachments(); }; row.appendChild(dl); row.appendChild(use); row.appendChild(del); d.appendChild(img); d.appendChild(lab); d.appendChild(row); wrap.appendChild(d); }); }
-
-// --- prepare messages ---
-$('prepareBtn').addEventListener('click', ()=>{ const msg=$('campMsg').value||''; prepared = contacts.filter(c=>c.selected && normPhone(c.phone).replace(/[^0-9]/g,'').length>6).map(c=>({phone: normPhone(c.phone), name: c.name||'', text: msg.replace(/{{\s*name\s*}}/ig, c.name||'')})); const p=$('preview'); p.innerHTML=''; if(prepared.length===0) p.innerHTML='<div class="small">No recipients selected</div>'; prepared.forEach(x=>{ const d=document.createElement('div'); d.style.padding='8px'; d.style.borderBottom='1px solid rgba(255,255,255,0.03)'; d.innerHTML=`<strong>${esc(x.name||x.phone)}</strong><div class="small">${esc(x.phone)}</div><pre style="white-space:pre-wrap">${esc(x.text)}</pre>`; p.appendChild(d); }); alert('Prepared '+prepared.length); });
-
-// --- whatsapp-business url builder ---
-function waBusinessUrl(phone,text){ const ph=phone.replace(/[^0-9]/g,''); return `whatsapp-business://send?phone=${ph}&text=${encodeURIComponent(text||'')}`; }
-
-// --- Send All (controller window) ---
-$('sendAll').addEventListener('click', async ()=>{ if(prepared.length===0){ alert('Prepare first'); return; } const gap=Math.max(0, Number($('bulkGap').value)||2000); if(!confirm('Open '+prepared.length+' chats sequentially (one window)?')) return; controllerWindow = window.open('', '_blank'); for(let i=0;i<prepared.length;i++){ const p=prepared[i]; try{ controllerWindow.location.href = waBusinessUrl(p.phone,p.text); }catch(e){ controllerWindow = window.open(waBusinessUrl(p.phone,p.text), '_blank'); } try{ const arr=JSON.parse(localStorage.getItem('wb_sent')||'[]'); arr.push(p.phone); localStorage.setItem('wb_sent', JSON.stringify(arr)); }catch(e){} await new Promise(r=>setTimeout(r,gap)); } alert('Finished opening chats. Attach/send in WhatsApp Business.'); });
-
-// --- One-by-one ---
-$('sendOne').addEventListener('click', ()=> startOneByOne());
-$('stopOne').addEventListener('click', ()=> stopOneByOne());
-function startOneByOne(){ if(prepared.length===0){ alert('Prepare first'); return; } oneIndex=0; oneActive=true; const first=prepared[oneIndex++]; controllerWindow = window.open(waBusinessUrl(first.phone, first.text), '_blank'); try{ const arr=JSON.parse(localStorage.getItem('wb_sent')||'[]'); arr.push(first.phone); localStorage.setItem('wb_sent', JSON.stringify(arr)); }catch(e){} $('oneList').innerHTML = prepared.map(p=>`<div style="padding:6px;border-bottom:1px solid rgba(255,255,255,0.03)"><strong>${esc(p.name||p.phone)}</strong><div class="small">${esc(p.phone)}</div></div>`).join(''); $('oneModal').style.display='flex'; $('stopOne').style.display='inline-block'; document.addEventListener('visibilitychange', visibilityHandler); }
-function stopOneByOne(){ oneActive=false; document.removeEventListener('visibilitychange', visibilityHandler); $('oneModal').style.display='none'; $('stopOne').style.display='none'; alert('Stopped'); }
-$('oneNext').addEventListener('click', ()=> openNextOne()); $('oneStart').addEventListener('click', ()=> openNextOne()); $('oneStopBtn').addEventListener('click', ()=> stopOneByOne());
-async function openNextOne(){ if(!oneActive) return; if(oneIndex >= prepared.length){ alert('Completed all'); stopOneByOne(); return; } const p = prepared[oneIndex++]; try{ controllerWindow.location.href = waBusinessUrl(p.phone, p.text); }catch(e){ controllerWindow = window.open(waBusinessUrl(p.phone,p.text), '_blank'); } try{ const arr=JSON.parse(localStorage.getItem('wb_sent')||'[]'); arr.push(p.phone); localStorage.setItem('wb_sent', JSON.stringify(arr)); }catch(e){} }
-let visTimerId=null;
-function visibilityHandler(){ if(!oneActive) return; if(document.visibilityState==='visible'){ let secs=Math.max(1, Number($('oneCountdown').value)||3); if(visTimerId) clearInterval(visTimerId); visTimerId=setInterval(()=>{ secs--; if(secs<=0){ clearInterval(visTimerId); visTimerId=null; openNextOne(); } },1000); } else { if(visTimerId){ clearInterval(visTimerId); visTimerId=null; } } }
-
-// --- Export selected numbers ---
-$('exportNumbers').addEventListener('click', ()=>{ const list = contacts.filter(c=>c.selected).map(c=>c.phone.replace(/[^0-9+]/g,'')); if(list.length===0){ alert('No selected numbers'); return; } const blob = new Blob([list.join('\n')], {type:'text/plain'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'numbers.txt'; a.click(); URL.revokeObjectURL(url); });
-
-// --- Save/load campaign ---
-$('saveCamp').addEventListener('click', ()=>{ localStorage.setItem('wb_campaign', JSON.stringify({name:$('campName').value, msg:$('campMsg').value, hint:$('attachHint').value})); alert('Saved'); });
-$('loadCamp').addEventListener('click', ()=>{ const c = JSON.parse(localStorage.getItem('wb_campaign')||'null'); if(!c) return alert('No saved'); $('campName').value=c.name; $('campMsg').value=c.msg; $('attachHint').value=c.hint; alert('Loaded'); });
-
-// --- PWA manifest & tiny SW ---
-(function registerPWA(){ const manifest={name:'WB Business Sender',short_name:'WB',start_url:'.',display:'standalone',background_color:'#071025',theme_color:'#0b84ff'}; const mblob=new Blob([JSON.stringify(manifest)],{type:'application/json'}); const mu=URL.createObjectURL(mblob); let l=document.querySelector('link[rel="manifest"]'); if(!l){ l=document.createElement('link'); l.rel='manifest'; document.head.appendChild(l);} l.href = mu; const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('fetch',e=>{});`; const swBlob = new Blob([swCode],{type:'application/javascript'}); const swUrl = URL.createObjectURL(swBlob); if('serviceWorker' in navigator) navigator.serviceWorker.register(swUrl).catch(()=>{}); })();
-
-// init attachments load
-(async ()=>{ try{ await loadAttachments(); }catch(e){} })();
-</script>
-</body>
-</html>
-    <div class="row">
-      <button id="sendAll" class="btn big">Send All (auto, 2s gap)</button>
-      <button id="sendOne" class="btn ghost big">Send One-by-One (safe)</button>
-      <button id="stopOne" class="btn ghost big" style="display:none">Stop One-by-One</button>
-    </div>
-
-    <div style="height:8px"></div>
-    <div id="preview" class="notice">Prepared preview will appear here after you press Prepare.</div>
-  </section>
-
-  <div class="footer">Tap a contact row to toggle selection. Open on Android with WhatsApp Business installed.</div>
-</div>
-
-<!-- One-by-One modal minimal (reused) -->
-<div id="oneModal" class="card" style="display:none;position:fixed;inset:12px;background:#071425;z-index:999;padding:12px;border-radius:12px">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div><strong>One-by-One</strong><div class="small">Return to app → auto-advance countdown</div></div>
-    <div><button id="closeOne" class="btn ghost">Close</button></div>
-  </div>
-  <div id="oneList" style="max-height:50vh;overflow:auto;margin-top:8px"></div>
-  <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-    <div class="small">Countdown:</div><div id="countdown" class="small">3</div>
-    <div style="flex:1"></div>
-    <button id="oneNext" class="btn ghost">Next</button>
-    <button id="oneStart" class="btn">Start</button>
-    <button id="oneStopBtn" class="btn ghost">Stop</button>
-  </div>
-</div>
-
-<!-- JSZip CDN -->
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-
-<script>
-/* Simple single-file sender - streamlined and mobile friendly
-   Features:
-   - ZIP import (.zip exports from WhatsApp) -> extracts .txt and numbers
-   - Manual add number
-   - Attachment upload (IndexedDB simple)
-   - Prepare messages and preview
-   - Send All: opens a single window and navigates it sequentially every gap ms (works because window opened by click)
-   - Send One-by-One: opens first, returns to app triggers countdown then next (uses visibilitychange)
-   - Export numbers (.txt one-per-line)
-   - Simple PWA manifest + SW registration (dynamic)
-*/
-
-// minimal IndexedDB for attachments
-function openDB(){ return new Promise((res,rej)=>{ const r=indexedDB.open('wb_db',1); r.onupgradeneeded=e=>{ const db=e.target.result; if(!db.objectStoreNames.contains('attachments')) db.createObjectStore('attachments',{keyPath:'id'}); if(!db.objectStoreNames.contains('sent')) db.createObjectStore('sent',{keyPath:'id'}); }; r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-async function putAttachment(obj){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('attachments','readwrite'); tx.objectStore('attachments').put(obj); tx.oncomplete=()=>res(true); tx.onerror=()=>rej(tx.error); }); }
-async function getAttachments(){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('attachments','readonly'); const req=tx.objectStore('attachments').getAll(); req.onsuccess=()=>res(req.result||[]); req.onerror=()=>rej(req.error); }); }
-async function delAttachment(id){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('attachments','readwrite'); tx.objectStore('attachments').delete(id); tx.oncomplete=()=>res(true); tx.onerror=()=>rej(tx.error); }); }
-
-// helpers
-const $ = id=>document.getElementById(id);
-function normPhone(s){ return (s||'').replace(/[^0-9+]/g,''); }
-function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
-
-// state
-let contacts = []; // {phone,name,selected}
-let prepared = []; // {phone,name,text}
-let attachments = [];
-let oneIndex=0, oneActive=false, visTimer=null;
-let controllerWindow = null; // used by Send All to reuse a window
-
-// render contacts
-function renderContacts(){
-  const tbody = document.querySelector('#contactsTable tbody'); tbody.innerHTML='';
-  contacts.forEach((c,i)=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML = `<td class="checkbox-col"><input type="checkbox" ${c.selected?'checked':''} data-i="${i}" class="sel"></td>
-                    <td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.name||'')}</td>
-                    <td><button data-remove="${i}" class="btn ghost">Remove</button></td>`;
-    tbody.appendChild(tr);
-  });
-}
-document.addEventListener('click', (e)=>{
-  const rm=e.target.getAttribute('data-remove'); if(rm!=null){ contacts.splice(Number(rm),1); renderContacts(); return; }
-  const sel = e.target.closest('input.sel'); if(sel){ const i=Number(e.target.dataset.i); contacts[i].selected = e.target.checked; return; }
-});
-$('selectAll').addEventListener('change', e=>{ contacts.forEach(c=>c.selected=e.target.checked); renderContacts(); });
-
-// import file (ZIP/TXT/VCF/CSV)
-$('importBtn').addEventListener('click', async ()=>{
-  const f = $('fileInput').files[0];
-  if(!f){ const paste = prompt('Paste numbers or chat text (or cancel):'); if(paste){ extractNumbersFromText(paste); alert('Imported from paste'); } return; }
-  const name = f.name.toLowerCase();
-  try{
-    if(name.endsWith('.zip')){
-      const ab = await f.arrayBuffer();
-      const zip = await JSZip.loadAsync(ab);
-      const txtKey = Object.keys(zip.files).find(k=>k.toLowerCase().endsWith('.txt'));
-      if(!txtKey){ alert('No .txt found in ZIP'); return; }
-      const text = await zip.file(txtKey).async('string');
-      extractNumbersFromText(text);
-      alert('Numbers parsed from ZIP ('+txtKey+')');
-    } else {
-      const txt = await f.text();
-      extractNumbersFromText(txt);
-      alert('File parsed');
-    }
-  }catch(err){ console.error(err); alert('Import error: '+(err.message||err)); }
-});
-
-// extract number-like tokens from text
-function extractNumbersFromText(text){
-  const found = [];
-  const lines = text.split(/\r?\n/);
-  lines.forEach(L=>{
-    const m = L.match(/([+]?[\d\-\(\)\s]{6,})/g);
-    if(m) m.forEach(t=>found.push(t.replace(/[^\d+]/g,'')));
-  });
-  // fallback
-  if(found.length===0){
-    const all = text.match(/([+]?[\d]{6,})/g) || [];
-    all.forEach(t=>found.push(t));
+      tr.innerHTML = `
+        <td class="checkbox-col"><input type="checkbox" data-idx="${i}" class="sel" ${c.selected ? 'checked' : ''} aria-label="Select contact ${esc(c.name || c.phone)}"></td>
+        <td>${esc(c.name || '')}</td>
+        <td>${esc(c.phone)}</td>
+        <td><input type="text" data-idx="${i}" class="msgEdit" value="${esc(c.message || '')}" aria-label="Edit message for ${esc(c.name || c.phone)}"></td>
+        <td><button data-idx="${i}" class="removeBtn" aria-label="Remove contact ${esc(c.name || c.phone)}" style="background:#e53935;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">X</button></td>
+      `;
+      contactsTbody.appendChild(tr);
+    });
   }
-  // dedupe & add
-  Array.from(new Set(found)).forEach(p=>{
-    const np = normPhone(p);
-    if(!np) return;
-    const key = np.replace(/[^0-9]/g,'');
-    if(!contacts.some(c=>c.phone.replace(/[^0-9]/g,'')===key)) contacts.push({phone:np,name:'',selected:true});
-  });
-  renderContacts();
-}
 
-// add custom
-$('addCustom').addEventListener('click', ()=>{ const p=normPhone($('customNumber').value.trim()); const n=$('customName').value.trim(); if(!p){ alert('Enter a valid number'); return; } const key=p.replace(/[^0-9]/g,''); if(contacts.some(c=>c.phone.replace(/[^0-9]/g,'')===key)){ alert('Already added'); return; } contacts.push({phone:p,name:n,selected:true}); $('customNumber').value=''; $('customName').value=''; renderContacts(); });
+  // Add new contact
+  function addContact(phone,name=''){
+    const cleanPhone = normPhone(phone);
+    if(!cleanPhone || cleanPhone.length < 6) return false;
+    if(contacts.find(c => normPhone(c.phone) === cleanPhone)) return false;
+    contacts.push({phone: cleanPhone, name: name.trim(), message: '' , selected:true});
+    renderContacts();
+    return true;
+  }
 
-// attachments
-$('attachFileInput').addEventListener('change', async e=>{
-  const f = e.target.files[0]; if(!f) return;
-  const r = new FileReader();
-  r.onload = async ev => {
-    const dataUrl = ev.target.result;
-    const id = 'a_' + Date.now();
-    await putAttachment({id,name:f.name,dataUrl});
-    await loadAttachments();
-    alert('Stored: ' + f.name);
-  };
-  r.readAsDataURL(f);
-});
-async function loadAttachments(){ attachments = await getAttachments(); renderAttachments(); }
-function renderAttachments(){ const wrap = $('attachmentList'); wrap.innerHTML=''; attachments.forEach(a=>{ const d=document.createElement('div'); d.className='att'; const img=document.createElement('img'); img.src=a.dataUrl; const lab=document.createElement('div'); lab.className='small'; lab.textContent=a.name; const row=document.createElement('div'); row.className='row'; row.style.marginTop='6px'; const dl=document.createElement('a'); dl.href=a.dataUrl; dl.download=a.name; dl.className='btn ghost'; dl.textContent='Download'; const use=document.createElement('button'); use.className='btn'; use.textContent='Use'; use.onclick=()=>{ $('attachHint').value=a.name; alert('Hint set to: '+a.name); }; const del=document.createElement('button'); del.className='btn ghost'; del.textContent='Delete'; del.onclick=async()=>{ await delAttachment(a.id); await loadAttachments(); }; row.appendChild(dl); row.appendChild(use); row.appendChild(del); d.appendChild(img); d.appendChild(lab); d.appendChild(row); wrap.appendChild(d); }); }
-
-// prepare
-$('prepareBtn').addEventListener('click', ()=>{ const msg = $('campMsg').value||''; prepared = contacts.filter(c=>c.selected && normPhone(c.phone).replace(/[^0-9]/g,'').length>6).map(c=>({phone: normPhone(c.phone), name:c.name, text: msg.replace(/{{\s*name\s*}}/ig, c.name||'') })); const p = $('preview'); if(prepared.length===0) p.innerHTML='<div class="small">No recipients selected</div>'; else { p.innerHTML=''; prepared.forEach(x=>{ const d=document.createElement('div'); d.style.padding='8px'; d.style.borderBottom='1px solid rgba(255,255,255,0.03)'; d.innerHTML=`<strong>${escapeHtml(x.name||x.phone)}</strong><div class="small">${escapeHtml(x.phone)}</div><pre style="white-space:pre-wrap">${escapeHtml(x.text)}</pre>`; p.appendChild(d); }); } alert('Prepared: ' + prepared.length); });
-
-// build WA url
-function waUrl(phone,text){ const n = phone.replace(/[^0-9]/g,''); return 'https://api.whatsapp.com/send?phone=' + n + '&text=' + encodeURIComponent(text||''); }
-
-// Send All: open a new window once and navigate it sequentially (works because newWindow created by click)
-$('sendAll').addEventListener('click', async ()=>{
-  if(prepared.length===0){ alert('Prepare first'); return; }
-  const gap = Math.max(0, Number($('bulkGap').value)||2000);
-  if(!confirm('Will open a WhatsApp view for each recipient, one every ' + gap + 'ms. Proceed?')) return;
-  controllerWindow = window.open('', '_blank');
-  for(let i=0;i<prepared.length;i++){
-    const p = prepared[i];
-    try{ controllerWindow.location.href = waUrl(p.phone,p.text); } catch(e){ // fallback
-      controllerWindow = window.open(waUrl(p.phone,p.text), '_blank');
+  // Remove contact
+  contactsTbody.addEventListener('click', e => {
+    if(e.target.classList.contains('removeBtn')){
+      const i = Number(e.target.dataset.idx);
+      contacts.splice(i,1);
+      renderContacts();
     }
-    // try to record as attempt in localStorage sent list (simple)
-    try{ recordSentNumber(p.phone); }catch(e){}
-    await new Promise(r=>setTimeout(r,gap));
-  }
-  alert('Done opening chats. Attach manually and send in WhatsApp.');
-});
-
-// One-by-One: open controller window then rely on visibilitychange + countdown to auto-advance
-$('sendOne').addEventListener('click', ()=> startOneByOne());
-$('stopOne').addEventListener('click', ()=> stopOneByOne());
-
-function startOneByOne(){
-  if(prepared.length===0){ alert('Prepare first'); return; }
-  oneIndex = 0; oneActive = true;
-  // open first window now (user gesture)
-  const first = prepared[oneIndex++];
-  controllerWindow = window.open(waUrl(first.phone, first.text), '_blank');
-  recordSentNumber(first.phone);
-  // show modal
-  $('oneList').innerHTML = prepared.map(p=>`<div style="padding:6px;border-bottom:1px solid rgba(255,255,255,0.03)"><strong>${escapeHtml(p.name||p.phone)}</strong><div class="small">${escapeHtml(p.phone)}</div></div>`).join('');
-  document.getElementById('oneModal').style.display='block';
-  $('stopOne').style.display='inline-block';
-  document.addEventListener('visibilitychange', visibilityHandler);
-}
-
-function stopOneByOne(){ oneActive=false; document.removeEventListener('visibilitychange', visibilityHandler); $('oneModal').style.display='none'; $('stopOne').style.display='none'; alert('Stopped'); }
-
-$('oneNext').addEventListener('click', ()=> { if(oneActive) openNextOne(); });
-$('oneStart').addEventListener('click', ()=> { if(oneActive) openNextOne(); });
-
-async function openNextOne(){
-  if(!oneActive) return;
-  if(oneIndex >= prepared.length){ alert('Completed'); stopOneByOne(); return; }
-  const p = prepared[oneIndex++];
-  // navigate controller window
-  try{ controllerWindow.location.href = waUrl(p.phone,p.text); } catch(e){ controllerWindow = window.open(waUrl(p.phone,p.text), '_blank'); }
-  recordSentNumber(p.phone);
-}
-
-let visTimer = null;
-function visibilityHandler(){
-  if(!oneActive) return;
-  if(document.visibilityState === 'visible'){
-    // countdown (cfg 3s)
-    let secs = Number($('countdown').textContent) || 3;
-    $('countdown').textContent = secs;
-    if(visTimer) clearInterval(visTimer);
-    visTimer = setInterval(()=>{
-      secs--; $('countdown').textContent = secs;
-      if(secs<=0){ clearInterval(visTimer); visTimer=null; openNextOne(); }
-    }, 1000);
-  } else {
-    if(visTimer) { clearInterval(visTimer); visTimer=null; }
-  }
-}
-
-// sent logging (numbers only)
-function recordSentNumber(phone){
-  try{
-    const arr = JSON.parse(localStorage.getItem('wb_sent')||'[]');
-    arr.push({phone: normPhone(phone), ts: Date.now()});
-    localStorage.setItem('wb_sent', JSON.stringify(arr));
-  }catch(e){}
-}
-
-// Export numbers (selected)
-$('exportNumbers').addEventListener('click', ()=>{
-  const list = contacts.filter(c=>c.selected).map(c=>c.phone.replace(/[^0-9+]/g,''));
-  if(list.length===0){ alert('No selected numbers'); return; }
-  const blob = new Blob([list.join('\n')], {type:'text/plain'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='numbers.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-});
-
-// simple attach hint save/load
-$('saveCamp').addEventListener('click', ()=>{ const c = {name:$('campName').value, msg:$('campMsg').value, hint:$('attachHint').value}; localStorage.setItem('wb_camp', JSON.stringify(c)); alert('Saved'); });
-$('loadCamp').addEventListener('click', ()=>{ const c = JSON.parse(localStorage.getItem('wb_camp')||'null'); if(!c) return alert('No saved'); $('campName').value=c.name; $('campMsg').value=c.msg; $('attachHint').value=c.hint; alert('Loaded'); });
-
-// load attachments on start
-(async()=>{ try{ const at = await getAttachments(); attachments = at; renderAttachments(); }catch(e){console.error(e);} })();
-
-// pwa manifest + tiny sw
-(function registerPWA(){
-  const manifest = {name:'WB Simple Sender', short_name:'WB', start_url:'.', display:'standalone', background_color:'#071025', theme_color:'#0b84ff'};
-  const mb = new Blob([JSON.stringify(manifest)],{type:'application/json'}); const url=URL.createObjectURL(mb);
-  let link = document.querySelector('link[rel="manifest"]'); if(!link){ link=document.createElement('link'); link.rel='manifest'; document.head.appendChild(link); } link.href=url;
-  const swc = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('fetch',e=>{});`;
-  const swb = new Blob([swc],{type:'application/javascript'}); const swurl=URL.createObjectURL(swb);
-  if('serviceWorker' in navigator) navigator.serviceWorker.register(swurl).catch(()=>{});
-})();
-
-// small UI tweaks
-$('countdown').textContent = 3;
-$('bulkGap').value = 2000;
-$('selectAll').addEventListener('change', e=>{ contacts.forEach(c=>c.selected=e.target.checked); renderContacts(); });
-
-</script>
-</body>
-</html>
-    <div class="row">
-      <button id="sendAll" class="btn">Send All (bulk)</button>
-      <button id="sendOne" class="btn ghost">Send One-by-One</button>
-      <button id="stopOne" class="btn ghost" style="display:none">Stop</button>
-    </div>
-    <div style="height:8px"></div>
-    <div id="preparedPreview" class="notice small">Prepared preview appears here after Prepare.</div>
-  </section>
-
-  <!-- Sent log -->
-  <section class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div><strong>Sent Log</strong><div class="small">Numbers recorded when Send actions happen</div></div>
-      <div><button id="exportSent" class="btn">Export Sent (.txt)</button></div>
-    </div>
-    <div style="height:8px"></div>
-    <div style="max-height:160px;overflow:auto">
-      <table class="table" id="sentTable"><thead><tr><th>Phone</th><th>Timestamp</th></tr></thead><tbody></tbody></table>
-    </div>
-  </section>
-
-  <button id="installBtn" class="fab">Install</button>
-</div>
-
-<!-- One-by-One modal -->
-<div id="oneModal" class="modal"><div class="panel card">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div><strong>One-by-One</strong><div class="small">Returns to app → countdown → next chat opens</div></div>
-    <div><button id="closeOne" class="btn ghost">Close</button></div>
-  </div>
-  <div style="height:8px"></div>
-  <div id="oneList" style="max-height:50vh;overflow:auto"></div>
-  <div style="height:8px"></div>
-  <div class="row">
-    <div class="small">Countdown:</div>
-    <div class="countdown" id="countdown">3</div>
-    <div style="flex:1"></div>
-    <button id="oneNext" class="btn ghost">Next</button>
-    <button id="oneStart" class="btn">Start</button>
-    <button id="oneStopBtn" class="btn ghost">Stop</button>
-  </div>
-</div></div>
-
-<!-- JSZip CDN -->
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-
-<script>
-/* WB Sender single file — concise and robust
-   Features: ZIP import, custom adder, send modes, attachments, sent-log export (numbers only)
-*/
-
-// Small IndexedDB wrapper for attachments
-function openDB(name='wb_db', ver=1){
-  return new Promise((res, rej)=>{
-    const r = indexedDB.open(name, ver);
-    r.onupgradeneeded = e => {
-      const db = e.target.result;
-      if(!db.objectStoreNames.contains('attachments')) db.createObjectStore('attachments', {keyPath:'id'});
-      if(!db.objectStoreNames.contains('sent')) db.createObjectStore('sent', {keyPath:'id'});
-    };
-    r.onsuccess = ()=> res(r.result);
-    r.onerror = ()=> rej(r.error);
   });
-}
-async function putAttachment(obj){
-  const db = await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('attachments','readwrite'); tx.objectStore('attachments').put(obj); tx.oncomplete=()=>res(true); tx.onerror=()=>rej(tx.error); });
-}
-async function getAttachments(){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('attachments','readonly'); const req=tx.objectStore('attachments').getAll(); req.onsuccess=()=>res(req.result||[]); req.onerror=()=>rej(req.error); }); }
-async function delAttachment(id){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('attachments','readwrite'); tx.objectStore('attachments').delete(id); tx.oncomplete=()=>res(true); tx.onerror=()=>rej(tx.error); }); }
 
-// Sent log storage (numbers only)
-async function logSentNumber(phone){
-  const db = await openDB();
-  return new Promise((res,rej)=>{
-    const tx = db.transaction('sent','readwrite');
-    const id = 's_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-    tx.objectStore('sent').put({id, phone, ts:Date.now()});
-    tx.oncomplete = ()=> res(true);
-    tx.onerror = ()=> rej(tx.error);
+  // Select/deselect contact
+  contactsTbody.addEventListener('change', e => {
+    if(e.target.classList.contains('sel')){
+      const i = Number(e.target.dataset.idx);
+      contacts[i].selected = e.target.checked;
+    }
   });
-}
-async function getSent(){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('sent','readonly'); const req=tx.objectStore('sent').getAll(); req.onsuccess=()=>res(req.result||[]); req.onerror=()=>rej(req.error); }); }
-async function clearSent(){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('sent','readwrite'); tx.objectStore('sent').clear(); tx.oncomplete=()=>res(true); tx.onerror=()=>rej(tx.error); }); }
 
-// DOM shortcuts
-const $ = id => document.getElementById(id);
-
-// App state
-let contacts = []; // {phone,name,selected}
-let prepared = []; // {phone,name,text}
-let attachments = []; // loaded attachments list
-let oneIndex = 0, oneActive=false, visTimer=null;
-
-// Utilities
-function escapeHtml(s){ if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
-function normPhone(s){ return (s||'').replace(/[^0-9+]/g,''); }
-function dedupeAndAdd(nums){
-  nums.forEach(n=>{
-    const p = normPhone(n);
-    if(!p) return;
-    const key = p.replace(/[^0-9]/g,'');
-    if(!contacts.some(c=>c.phone.replace(/[^0-9]/g,'')===key)) contacts.push({phone:p,name:'',selected:true});
+  // Edit message per contact
+  contactsTbody.addEventListener('input', e => {
+    if(e.target.classList.contains('msgEdit')){
+      const i = Number(e.target.dataset.idx);
+      contacts[i].message = e.target.value;
+    }
   });
-  renderContacts();
-}
 
-// Render contacts table
-function renderContacts(){
-  const tbody = document.querySelector('#contactsTable tbody');
-  tbody.innerHTML = '';
-  contacts.forEach((c,i)=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td class="checkbox-col"><input type="checkbox" ${c.selected?'checked':''} data-i="${i}" class="sel"></td>
-      <td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.name||'')}</td>
-      <td><button data-remove="${i}" class="btn btn.ghost">Remove</button></td>`;
-    tbody.appendChild(tr);
+  // Select all checkbox
+  $('selectAll').addEventListener('change', e => {
+    contacts.forEach(c => c.selected = e.target.checked);
+    renderContacts();
   });
-}
 
-// Events: select / remove
-document.addEventListener('click', (e)=>{
-  const rem = e.target.getAttribute('data-remove');
-  if(rem!==null){ contacts.splice(Number(rem),1); renderContacts(); }
-});
-document.addEventListener('change', (e)=>{
-  if(e.target.classList.contains('sel')){ contacts[Number(e.target.dataset.i)].selected = e.target.checked; }
-});
+  // Import contacts from pasted numbers
+  $('pasteBtn').addEventListener('click', () => {
+    const lines = $('manualNumbers').value.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    let added = 0;
+    lines.forEach(l => { if(addContact(l)) added++; });
+    alert(`Added ${added} contacts`);
+    $('manualNumbers').value = '';
+  });
 
-// Select all
-$.selectAll.addEventListener('change', (e)=>{ contacts.forEach(c=>c.selected=e.target.checked); renderContacts(); });
+  // Add custom number and name
+  $('addCustom').addEventListener('click', () => {
+    const phone = $('customNumber').value.trim();
+    const name = $('customName').value.trim();
+    if(addContact(phone, name)) {
+      $('customNumber').value = '';
+      $('customName').value = '';
+    } else alert('Invalid or duplicate phone number');
+  });
 
-// Custom adder
-$.addCustom.addEventListener('click', ()=>{
-  const p = normPhone($.customNumber.value.trim());
-  const n = $.customName.value.trim();
-  if(!p){ alert('Enter a valid phone'); return; }
-  if(contacts.some(c=>c.phone.replace(/[^0-9]/g,'')===p.replace(/[^0-9]/g,''))){ alert('Already added'); return; }
-  contacts.push({phone:p,name:n,selected:true});
-  $.customNumber.value=''; $.customName.value='';
-  renderContacts();
-});
-
-// Import file handler (.zip, .txt, .vcf, .csv)
-$.importBtn.addEventListener('click', async ()=>{
-  const f = $.fileInput.files[0];
-  if(!f){ const paste = prompt('Paste numbers or text lines:'); if(paste) { dedupeAndAdd(paste.split(/\r?\n/).map(l=>l.trim())); alert('Imported from paste'); } return; }
-  const fname = f.name.toLowerCase();
-  try{
-    if(fname.endsWith('.zip')){
-      const ab = await f.arrayBuffer();
-      const zip = await JSZip.loadAsync(ab);
-      const txtFile = Object.keys(zip.files).find(k=>k.toLowerCase().endsWith('.txt'));
-      if(!txtFile){ alert('No .txt found in ZIP'); return; }
-      const content = await zip.file(txtFile).async('string');
-      // extract phone-like tokens
-      const found = [];
-      (content.split(/\r?\n/)).forEach(L=>{
-        const m = L.match(/([+]?[\d\-\(\)\s]{6,})/g);
-        if(m) m.forEach(t=>found.push(t.replace(/[^\d+]/g,'')));
-      });
-      if(found.length===0){
-        const fallback = content.match(/([+]?\\d{6,})/g) || [];
-        fallback.forEach(t=>found.push(t));
+  // Import contacts from file (ZIP/TXT/CSV)
+  $('importBtn').addEventListener('click', async () => {
+    const f = $('fileInput').files[0];
+    if(!f) return alert('Select a file first');
+    try {
+      const name = f.name.toLowerCase();
+      if(name.endsWith('.zip')){
+        const ab = await f.arrayBuffer();
+        const zip = await JSZip.loadAsync(ab);
+        const txtKey = Object.keys(zip.files).find(k=>k.toLowerCase().endsWith('.txt') || k.toLowerCase().endsWith('.csv'));
+        if(!txtKey) return alert('No .txt or .csv file found inside the zip');
+        const text = await zip.file(txtKey).async('string');
+        importFromText(text);
+      } else {
+        const text = await f.text();
+        importFromText(text);
       }
-      dedupeAndAdd(found);
-      alert('Parsed ' + found.length + ' numbers from ZIP');
-    } else if(fname.endsWith('.vcf')){
-      const text = await f.text();
-      const entries = text.split(/END:VCARD/i);
-      const found=[];
-      entries.forEach(e=>{
-        const m = e.match(/TEL[^:]*:(.*)/i);
-        if(m) found.push(m[1].replace(/[^0-9+]/g,''));
-      });
-      dedupeAndAdd(found);
-      alert('Imported ' + found.length + ' from VCF');
-    } else {
-      const text = await f.text();
-      const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-      // if lines have commas, pick first token if phone-like
-      const nums = [];
-      lines.forEach(l=>{
-        if(l.includes(',')){ const p = l.split(',')[0].replace(/[^0-9+]/g,''); if(p) nums.push(p); }
-        else {
-          const m = l.match(/([+]?[\d\-\(\)\s]{6,})/g);
-          if(m) m.forEach(t=>nums.push(t.replace(/[^\d+]/g,'')));
+    } catch(e) {
+      alert('Import failed: ' + e.message);
+    }
+  });
+
+  function importFromText(text){
+    const lines = text.split(/\r?\n/);
+    let added = 0;
+    lines.forEach(line => {
+      const m = line.match(/([+0-9]{6,})/);
+      if(m) if(addContact(m[0])) added++;
+    });
+    alert(`Imported ${added} contacts`);
+  }
+
+  // Attachments storage using IndexedDB
+  let attachmentsList = [];
+
+  function openDB(){
+    return new Promise((res, rej) => {
+      const req = indexedDB.open('wb_attachments', 1);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if(!db.objectStoreNames.contains('attachments')){
+          db.createObjectStore('attachments', {keyPath:'id'});
         }
-      });
-      dedupeAndAdd(nums);
-      alert('Imported ' + nums.length + ' items from file');
-    }
-  }catch(err){ console.error(err); alert('Import failed: ' + (err && err.message ? err.message : err)); }
-});
-
-// Paste numbers helper
-$.pasteBtn.addEventListener('click', ()=>{ const txt = prompt('Paste numbers / lines:'); if(txt) { dedupeAndAdd(txt.split(/\r?\n/).map(l=>l.trim())); alert('Parsed pasted data'); } });
-
-// Clear contacts
-$.clearContacts.addEventListener('click', ()=>{ if(confirm('Clear all contacts?')){ contacts=[]; renderContacts(); } });
-
-// Attachments: upload and store
-$.attachFileInput.addEventListener('change', async (e)=>{
-  const f = e.target.files[0]; if(!f) return;
-  const r = new FileReader();
-  r.onload = async ev => {
-    const dataUrl = ev.target.result;
-    const id = 'a_' + Date.now();
-    await putAttachment({id, name: f.name, dataUrl});
-    await loadAttachments();
-    alert('Attachment stored locally: ' + f.name);
-  };
-  r.readAsDataURL(f);
-});
-async function loadAttachments(){
-  attachments = await getAttachments();
-  const wrap = $.attachmentList; wrap.innerHTML = '';
-  attachments.forEach(a=>{
-    const d = document.createElement('div'); d.style.display='flex'; d.style.flexDirection='column'; d.style.alignItems='center';
-    const img = document.createElement('img'); img.src = a.dataUrl; img.style.maxHeight='80px'; img.style.borderRadius='8px';
-    const label = document.createElement('div'); label.className='small'; label.textContent = a.name;
-    const row = document.createElement('div'); row.className='row';
-    const dl = document.createElement('a'); dl.href=a.dataUrl; dl.download=a.name; dl.className='btn btn.ghost'; dl.textContent='Download';
-    const use = document.createElement('button'); use.className='btn'; use.textContent='Use'; use.onclick=()=>{ $.attachHint.value = a.name; alert('Attachment hint set: ' + a.name); };
-    const del = document.createElement('button'); del.className='btn btn.ghost'; del.textContent='Delete'; del.onclick=async ()=>{ await delAttachment(a.id); await loadAttachments(); };
-    row.appendChild(dl); row.appendChild(use); row.appendChild(del);
-    d.appendChild(img); d.appendChild(label); d.appendChild(row);
-    wrap.appendChild(d);
-  });
-}
-
-// Prepare messages
-$.prepareBtn.addEventListener('click', ()=>{
-  const campName = $.campName.value.trim();
-  const msg = $.campMsg.value || '';
-  const recips = contacts.filter(c=>c.selected && c.phone && normPhone(c.phone).replace(/[^0-9]/g,'').length>6);
-  prepared = recips.map(r=>({phone: normPhone(r.phone), name: r.name||'', text: msg.replace(/{{\s*name\s*}}/ig, r.name||'')}));
-  const prev = $.preparedPreview; prev.innerHTML = '';
-  if(prepared.length===0) prev.innerHTML = '<div class="small">No recipients selected</div>';
-  prepared.forEach(p=>{
-    const d=document.createElement('div'); d.style.padding='6px'; d.style.borderBottom='1px solid rgba(255,255,255,0.02)';
-    d.innerHTML = `<strong>${escapeHtml(p.name||p.phone)}</strong><div class="small">${escapeHtml(p.phone)}</div><pre style="white-space:pre-wrap">${escapeHtml(p.text)}</pre>`;
-    prev.appendChild(d);
-  });
-  alert('Prepared ' + prepared.length + ' messages');
-});
-
-// Build WhatsApp URL
-function waUrl(phone, text){ const ph = phone.replace(/[^0-9]/g,''); return 'https://api.whatsapp.com/send?phone=' + ph + '&text=' + encodeURIComponent(text||''); }
-
-// Send All (bulk) sequentially with gap
-$.sendAll.addEventListener('click', async ()=>{
-  if(prepared.length===0){ alert('Prepare messages first'); return; }
-  const gap = Math.max(0, Number($.bulkGap.value) || 2000);
-  if(!confirm('Open ' + prepared.length + ' chats with ' + gap + 'ms gap?')) return;
-  // open sequentially but try to avoid popup blocking by opening a single tab and reusing it
-  const newWindow = window.open('', '_blank');
-  for(let i=0;i<prepared.length;i++){
-    const p = prepared[i];
-    const url = waUrl(p.phone, p.text);
-    try{
-      // navigate same opened tab (less popups)
-      newWindow.location.href = url;
-    }catch(e){
-      window.open(url, '_blank');
-    }
-    // log number as "sent attempt"
-    await logSentNumber(p.phone);
-    await updateSentTable();
-    await new Promise(r=>setTimeout(r,gap));
+      };
+      req.onsuccess = e => res(e.target.result);
+      req.onerror = e => rej(e.target.error);
+    });
   }
-  alert('Opened chats. Attach files manually and send in WhatsApp.');
-});
 
-// One-by-One flow
-$.sendOne.addEventListener('click', ()=> startOneModal());
-let visHandler;
-function startOneModal(){
-  if(prepared.length===0){ alert('Prepare messages first'); return; }
-  oneIndex = 0; oneActive = true;
-  renderOneList();
-  $('.one').style.display='flex';
-  document.querySelector('.modal').style.display='flex';
-  document.addEventListener('visibilitychange', visibilityHandler);
-}
-function renderOneList(){
-  const list = $.oneList; list.innerHTML = '';
-  prepared.forEach((p,i)=>{ const d=document.createElement('div'); d.style.padding='6px'; d.innerHTML = `<strong>${escapeHtml(p.name||p.phone)}</strong><div class="small">${escapeHtml(p.phone)}</div><pre style="white-space:pre-wrap">${escapeHtml(p.text)}</pre>`; list.appendChild(d); });
-}
-$.closeOne.addEventListener('click', ()=>{ stopOne(); hideOne(); });
-function hideOne(){ document.querySelector('.modal').style.display='none'; }
-function stopOne(){ oneActive=false; document.removeEventListener('visibilitychange', visibilityHandler); $.stopOne.style.display='none'; $.sendOne.style.display='inline-block'; alert('One-by-One stopped'); }
-
-async function openNext(){
-  if(!oneActive) return;
-  if(oneIndex >= prepared.length){ alert('Done'); stopOne(); hideOne(); return; }
-  const p = prepared[oneIndex++];
-  const hint = $.attachHint.value;
-  if(hint && !confirm('Remember to attach "'+hint+'" manually after WhatsApp opens. Click OK to proceed for ' + (p.name||p.phone))) { stopOne(); hideOne(); return; }
-  // navigate same tab to deep link so mobile will open app
-  window.location.href = waUrl(p.phone, p.text);
-  // record sent attempt
-  await logSentNumber(p.phone);
-  await updateSentTable();
-}
-
-// visibility handler: on return -> start countdown -> openNext
-let visTimerId = null;
-function visibilityHandler(){
-  if(!oneActive) return;
-  if(document.visibilityState === 'visible'){
-    let secs = Number($.cfgCountdown.textContent) || 3;
-    $.countdown.textContent = secs;
-    if(visTimerId) clearInterval(visTimerId);
-    visTimerId = setInterval(()=>{
-      secs--; $.countdown.textContent = secs;
-      if(secs<=0){ clearInterval(visTimerId); visTimerId=null; if(oneIndex < prepared.length) openNext(); else { alert('One-by-one finished'); stopOne(); hideOne(); } }
-    },1000);
-  } else {
-    if(visTimerId) { clearInterval(visTimerId); visTimerId=null; }
+  async function saveAttachment(att){
+    const db = await openDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('attachments','readwrite');
+      tx.objectStore('attachments').put(att);
+      tx.oncomplete = () => res();
+      tx.onerror = e => rej(e.target.error);
+    });
   }
-}
 
-// wire one controls
-$.oneStart.addEventListener('click', ()=>{ $.stopOne.style.display='inline-block'; $.oneStart.style.display='none'; openNext(); });
-$.oneNext.addEventListener('click', ()=> openNext());
-$.oneStopBtn.addEventListener('click', ()=> stopOne());
+  async function loadAttachments(){
+    const db = await openDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('attachments','readonly');
+      const req = tx.objectStore('attachments').getAll();
+      req.onsuccess = e => res(e.target.result || []);
+      req.onerror = e => rej(e.target.error);
+    });
+  }
 
-// Sent table update
-async function updateSentTable(){
-  const arr = await getSent();
-  const tbody = $.sentTable.querySelector('tbody'); tbody.innerHTML = '';
-  arr.forEach(s=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${escapeHtml(s.phone)}</td><td>${new Date(s.ts).toLocaleString()}</td>`;
-    tbody.appendChild(tr);
+  async function deleteAttachment(id){
+    const db = await openDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('attachments','readwrite');
+      tx.objectStore('attachments').delete(id);
+      tx.oncomplete = () => res();
+      tx.onerror = e => rej(e.target.error);
+    });
+  }
+
+  function renderAttachments(){
+    const list = $('attachmentList');
+    list.innerHTML = '';
+    attachmentsList.forEach((att, i) => {
+      const div = document.createElement('div');
+      div.className = 'attachment-item';
+      const isImg = att.dataUrl.startsWith('data:image');
+      const preview = document.createElement(isImg ? 'img' : 'div');
+      if(isImg) preview.src = att.dataUrl;
+      else preview.textContent = att.name;
+      preview.style.maxWidth = '60px';
+      preview.style.maxHeight = '60px';
+      preview.style.borderRadius = '6px';
+      preview.style.objectFit = 'contain';
+
+      const nameDiv = document.createElement('div');
+      nameDiv.textContent = att.name;
+
+      const useBtn = document.createElement('button');
+      useBtn.textContent = 'Use Hint';
+      useBtn.title = 'Set attachment hint for sending';
+      useBtn.onclick = () => {
+        $('attachHint').value = att.name;
+        alert('Attachment hint set: ' + att.name);
+      };
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.style.backgroundColor = 'var(--danger)';
+      delBtn.onclick = async () => {
+        await deleteAttachment(att.id);
+        attachmentsList = await loadAttachments();
+        renderAttachments();
+      };
+
+      div.appendChild(preview);
+      div.appendChild(nameDiv);
+      div.appendChild(useBtn);
+      div.appendChild(delBtn);
+      list.appendChild(div);
+    });
+  }
+
+  $('attachFileInput').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    for (const f of files) {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const id = 'att_' + Date.now() + Math.random().toString(36).slice(2);
+        await saveAttachment({id, name: f.name, dataUrl: ev.target.result});
+        attachmentsList = await loadAttachments();
+        renderAttachments();
+        alert('Saved attachment: ' + f.name);
+      };
+      reader.readAsDataURL(f);
+    }
+    e.target.value = ''; // clear input
   });
-}
 
-// Export contacts (numbers only)
-$.exportNumbers.addEventListener('click', ()=>{
-  // gather selected or all
-  const list = contacts.filter(c=>c.selected).map(c=>c.phone.replace(/[^0-9+]/g,''));
-  if(list.length===0){ alert('No selected numbers'); return; }
-  const blob = new Blob([list.join('\\n')], {type:'text/plain'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='numbers.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-});
+  // Message preparation
+  $('prepareBtn').addEventListener('click', () => {
+    const defaultMsg = $('defaultMsg').value || '';
+    prepared = contacts
+      .filter(c => c.selected && normPhone(c.phone).length > 6)
+      .map(c => ({
+        phone: normPhone(c.phone),
+        name: c.name,
+        text: c.message.trim() || defaultMsg.replace(/{{\s*name\s*}}/gi, c.name || '')
+      }));
+    if(prepared.length === 0){
+      alert('No valid selected contacts to send');
+      sendAllBtn.disabled = true;
+      return;
+    }
+    sendAllBtn.disabled = false;
+    alert(`Prepared ${prepared.length} messages.`);
+  });
 
-// Export sent numbers (numbers only)
-$.exportSent.addEventListener('click', async ()=>{
-  const arr = await getSent();
-  const list = (arr || []).map(x => x.phone.replace(/[^0-9+]/g,''));
-  if(list.length===0){ alert('No sent entries'); return; }
-  const blob = new Blob([list.join('\\n')], {type:'text/plain'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='sent_numbers.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-});
+  // Export sent numbers
+  $('exportSent').addEventListener('click', () => {
+    if(sentPhones.length === 0){
+      alert('No sent numbers to export.');
+      return;
+    }
+    const blob = new Blob([sentPhones.join('\n')], {type:'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sent_numbers.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 
-// Load existing attachments & sent on startup
-(async ()=>{
-  try{ await loadAttachments(); await updateSentTable(); }catch(e){ console.error(e); }
+  // Auto advance sending
+  async function sendNext(){
+    if(sendIndex >= prepared.length){
+      sendingActive = false;
+      statusEl.textContent = 'All messages sent.';
+      return;
+    }
+    const c = prepared[sendIndex];
+    statusEl.textContent = `Sending to ${c.phone} (${sendIndex + 1} / ${prepared.length})...`;
+
+    // Build WhatsApp Business URI with text
+    const encodedText = encodeURIComponent(c.text);
+    // whatsapp://send?phone=919999999999&text=...
+    const url = `whatsapp://send?phone=${c.phone}&text=${encodedText}`;
+
+    // Open WhatsApp Business chat
+    window.location.href = url;
+
+    sentPhones.push(c.phone);
+    localStorage.setItem('wb_sent', JSON.stringify(sentPhones));
+
+    sendIndex++;
+  }
+
+  // Listen for focus to auto-send next
+  window.addEventListener('focus', async () => {
+    if(!sendingActive) return;
+    await sleep(1000); // 1-second delay
+    await sendNext();
+  });
+
+  // Start sending on button click
+  $('sendAll').addEventListener('click', async () => {
+    if(prepared.length === 0){
+      alert('Prepare messages first.');
+      return;
+    }
+    sendingActive = true;
+    sendIndex = 0;
+    await sendNext();
+  });
+
+  // Load attachments on start
+  (async () => {
+    attachmentsList = await loadAttachments();
+    renderAttachments();
+  })();
+
+  // Add shortcut input for attach hint (optional)
+  // You can expand this if you want to integrate attaching files with WhatsApp Business later
+
 })();
-
-// PWA: dynamic manifest + simple sw
-function registerPWA(){
-  const manifest = {name:'WB Sender',short_name:'WB',start_url:'.',display:'standalone',background_color:'#071025',theme_color:'#071025'};
-  const mf = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-  const mfurl = URL.createObjectURL(mf);
-  let link = document.querySelector('link[rel="manifest"]');
-  if(!link){ link=document.createElement('link'); link.rel='manifest'; document.head.appendChild(link);}
-  link.href = mfurl;
-
-  const swCode = `self.addEventListener('install', e=>{self.skipWaiting();});self.addEventListener('fetch', e=>{});`;
-  const swBlob = new Blob([swCode], {type:'application/javascript'});
-  const swUrl = URL.createObjectURL(swBlob);
-  if('serviceWorker' in navigator){ navigator.serviceWorker.register(swUrl).catch(()=>{}); }
-}
-registerPWA();
-
-// Install prompt
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; $.installBtn.style.display='inline-block'; });
-$.installBtn.addEventListener('click', async ()=>{ if(deferredPrompt){ deferredPrompt.prompt(); const choice = await deferredPrompt.userChoice; } else alert('Use browser menu -> Add to Home screen.'); });
-
-// Save/load campaigns (simple)
-$.saveCamp.addEventListener('click', ()=>{
-  const name = $.campName.value.trim(); if(!name) return alert('Name required');
-  const camps = JSON.parse(localStorage.getItem('wb_camps')||'[]'); camps.unshift({name, msg: $.campMsg.value, hint: $.attachHint.value}); localStorage.setItem('wb_camps', JSON.stringify(camps)); alert('Saved');
-});
-$.loadCamp.addEventListener('click', ()=>{
-  const camps = JSON.parse(localStorage.getItem('wb_camps')||'[]'); if(!camps.length) return alert('No saved campaigns'); const c = camps[0]; $.campName.value=c.name; $.campMsg.value=c.msg; $.attachHint.value=c.hint; alert('Loaded first saved campaign');
-});
-
-// Helpers for DOM selection
-function $(sel){ return document.getElementById(sel); }
-
-// Prevent accidental popup blocking: set cfgCountdown display clickable
-document.querySelector('#cfgCountdown').addEventListener('click', ()=>{
-  const v = prompt('Set one-by-one countdown seconds (1-10):', document.querySelector('#cfgCountdown').textContent);
-  if(v){ document.querySelector('#cfgCountdown').textContent = Math.max(1, Math.min(10, Number(v)||3)); }
-});
-
-// init: simple
-renderContacts();
-loadAttachments();
-updateSentTable();
-
 </script>
+
+<!-- PWA manifest and service worker registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {
+      // No SW or fallback
+    });
+  }
+</script>
+<link rel="manifest" href="manifest.json" />
 </body>
 </html>
