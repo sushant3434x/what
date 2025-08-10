@@ -1,110 +1,99 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>WB Simple Sender</title>
-<meta name="theme-color" content="#0b84ff">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230b84ff'/><text x='50%' y='55%' fill='white' font-size='12' text-anchor='middle' font-family='sans-serif'>WB</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WB Sender</title>
 <style>
-  :root{--bg:#071025;--card:#071425;--accent:#0b84ff;--muted:#9aa4b2;color:#eaf3ff;font-family:Inter,system-ui,Arial}
-  *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(180deg,var(--bg),#071427);color:var(--color);-webkit-font-smoothing:antialiased;padding:14px}
-  .wrap{max-width:720px;margin:0 auto}
-  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .brand{font-weight:700;color:var(--accent);font-size:18px}
-  .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.02);margin-bottom:12px}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  input,textarea,select,button{font:inherit}
-  input,textarea{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;color:inherit;width:100%}
-  textarea{min-height:96px;resize:vertical}
-  .btn{background:var(--accent);color:#012;border:0;padding:10px 12px;border-radius:10px;cursor:pointer}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-  .big{font-size:16px;padding:12px 14px;width:100%}
-  table{width:100%;border-collapse:collapse;margin-top:8px}
-  th,td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px}
-  .checkbox-col{width:40px;text-align:center}
-  .small{font-size:13px;color:var(--muted)}
-  .attachments {display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  .att {display:flex;flex-direction:column;align-items:center}
-  .att img{max-width:84px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
-  .notice{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted);font-size:13px}
-  .footer{font-size:13px;color:var(--muted);text-align:center;margin-top:10px}
-  @media(min-width:900px){ .big{width:auto} }
+body { font-family: sans-serif; margin: 0; background: #f9f9f9; text-align: center; }
+h1 { background: #25D366; color: white; padding: 10px; margin: 0; }
+button { display: block; width: 80%; margin: 10px auto; padding: 15px; font-size: 18px;
+         background: #25D366; color: white; border: none; border-radius: 5px; }
+button:active { background: #1da851; }
+textarea { width: 80%; height: 100px; margin: 10px auto; display: block; }
+input[type="file"] { margin: 10px auto; display: block; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="brand">WB Simple Sender</div>
-    <div class="small">Installable • ZIP import</div>
-  </header>
+<h1>WhatsApp Business Sender</h1>
 
-  <!-- Campaign -->
-  <section class="card">
-    <input id="campName" placeholder="Campaign name (optional)" />
-    <div style="height:8px"></div>
-    <textarea id="campMsg" placeholder="Message template — use {{name}} for personalization"></textarea>
-    <div style="height:8px"></div>
-    <div class="row">
-      <input id="attachHint" placeholder="Attachment hint (choose below)" />
-      <button id="saveCamp" class="btn ghost">Save</button>
-      <button id="loadCamp" class="btn ghost">Load</button>
-    </div>
-  </section>
+<input type="file" id="zipInput" accept=".zip">
+<button onclick="importZip()">Import Broadcast ZIP</button>
+<textarea id="manualNumbers" placeholder="Enter numbers, one per line"></textarea>
+<button onclick="addManualNumbers()">Add Numbers</button>
+<button onclick="exportNumbers()">Export Numbers</button>
+<textarea id="messageText" placeholder="Enter your message"></textarea>
+<button onclick="sendAll()">Send All (2s delay)</button>
+<button onclick="sendOneByOne()">Send One-by-One</button>
 
-  <!-- Import / Add / Export -->
-  <section class="card">
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <div>
-        <strong>Contacts</strong><div class="small">Import WhatsApp export (.zip) or add manually</div>
-      </div>
-      <div class="row">
-        <button id="exportNumbers" class="btn">Export Numbers (.txt)</button>
-      </div>
-    </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+let numbers = [];
+let currentIndex = 0;
+let delay = 2000; // 2 seconds
 
-    <div style="height:8px"></div>
+function importZip() {
+  let file = document.getElementById('zipInput').files[0];
+  if (!file) return alert("Select a ZIP file first");
+  JSZip.loadAsync(file).then(zip => {
+    zip.forEach((relPath, file) => {
+      if (relPath.endsWith(".txt") || relPath.endsWith(".csv")) {
+        file.async("string").then(data => {
+          let found = data.match(/\d{10,15}/g);
+          if (found) {
+            numbers.push(...found);
+            alert("Imported " + found.length + " numbers");
+          }
+        });
+      }
+    });
+  });
+}
 
-    <div class="row">
-      <input id="fileInput" type="file" accept=".zip,.txt,.vcf,.csv" />
-      <button id="importBtn" class="btn big">Import File (ZIP/TXT/VCF)</button>
-    </div>
+function addManualNumbers() {
+  let lines = document.getElementById('manualNumbers').value.split(/\n/).map(l=>l.trim()).filter(l=>l);
+  numbers.push(...lines);
+  alert("Added " + lines.length + " numbers");
+}
 
-    <div style="height:8px"></div>
+function exportNumbers() {
+  let blob = new Blob([numbers.join("\n")], {type: 'text/plain'});
+  let a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = "numbers.txt";
+  a.click();
+}
 
-    <div class="row">
-      <input id="customNumber" placeholder="Add number e.g. 919876543210" style="width:55%"/>
-      <input id="customName" placeholder="Name (optional)" style="width:40%"/>
-      <button id="addCustom" class="btn">Add</button>
-    </div>
+function openWAB(num, text) {
+  let url = `whatsapp-business://send?phone=${num}&text=${encodeURIComponent(text)}`;
+  window.location.href = url;
+}
 
-    <div style="height:8px"></div>
+function sendAll() {
+  let msg = document.getElementById('messageText').value;
+  let i = 0;
+  function next() {
+    if (i >= numbers.length) return alert("All sent!");
+    openWAB(numbers[i], msg);
+    i++;
+    setTimeout(next, delay);
+  }
+  next();
+}
 
-    <div style="max-height:220px;overflow:auto">
-      <table id="contactsTable">
-        <thead><tr><th class="checkbox-col"><input id="selectAll" type="checkbox"></th><th>Phone</th><th>Name</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Attachments + Send -->
-  <section class="card">
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <div>
-        <strong>Attachment</strong><div class="small">Upload to keep handy (app stores locally)</div>
-      </div>
-      <div class="row">
-        <input id="attachFileInput" type="file" />
-      </div>
-    </div>
-
-    <div class="attachments" id="attachmentList"></div>
-
-    <div style="height:8px"></div>
-
-    <div class="row" style="align-items:center">
+function sendOneByOne() {
+  currentIndex = 0;
+  let msg = document.getElementById('messageText').value;
+  function next() {
+    if (currentIndex >= numbers.length) return alert("Done!");
+    openWAB(numbers[currentIndex], msg);
+    currentIndex++;
+    setTimeout(next, delay);
+  }
+  next();
+}
+</script>
+</body>
+</html>
       <div style="flex:1">
         <label class="small">Bulk gap (ms)</label>
         <input id="bulkGap" type="number" value="2000" />
