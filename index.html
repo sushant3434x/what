@@ -1,73 +1,112 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>SHEIN Instant Watcher</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: Arial; padding: 15px; background:#f5f5f5 }
-    h2 { text-align:center }
-    button {
-      width:100%; padding:14px; margin:8px 0;
-      font-size:16px; background:#000; color:#fff; border:none;
-    }
-    .box {
-      background:#fff; padding:10px; margin-top:10px; border-radius:6px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>SHEIN Instant Watcher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body { font-family: Arial; background:#f2f2f2; padding:10px }
+h2 { text-align:center }
+button {
+  width:100%; padding:14px; margin:6px 0;
+  font-size:16px; background:black; color:white; border:none;
+}
+.card {
+  background:white; padding:10px; margin-top:8px;
+  border-radius:6px;
+}
+.small { font-size:13px; color:#555 }
+</style>
 </head>
 
 <body>
 
 <h2>SHEIN Instant Watcher</h2>
 
-<p>1️⃣ Open a SHEIN category page in this tab<br>
-2️⃣ Click "Scan Page"<br>
-3️⃣ Open in SHEIN app</p>
+<button onclick="toggle()">START / STOP AUTO SCAN</button>
 
-<button onclick="scan()">SCAN PAGE</button>
-
+<div id="status" class="card">Waiting…</div>
 <div id="result"></div>
+
+<audio id="beep">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+</audio>
 
 <script>
 const allowedSizes = ["XL","L","28","30","32"];
+let running = false;
+let interval = null;
+let foundOnce = false;
+
+// Ask notification permission once
+if ("Notification" in window) {
+  Notification.requestPermission();
+}
+
+function toggle() {
+  if (running) {
+    clearInterval(interval);
+    running = false;
+    document.getElementById("status").innerText = "Stopped";
+  } else {
+    foundOnce = false;
+    interval = setInterval(scan, 1000);
+    running = true;
+    document.getElementById("status").innerText = "Scanning every 1 second…";
+  }
+}
 
 function scan() {
-  let products = document.querySelectorAll("a");
+  if (foundOnce) return;
+
+  let links = document.querySelectorAll("a");
   let matches = [];
 
-  products.forEach(a => {
+  links.forEach(a => {
     let text = a.innerText.toUpperCase();
     if (text.includes("MEN")) {
-      for (let s of allowedSizes) {
+      allowedSizes.forEach(s => {
         if (text.includes(s)) {
-          matches.push(a.href);
-          break;
+          let id = a.href.match(/\d+/);
+          if (id) matches.push({id:id[0], text:text});
         }
-      }
+      });
     }
   });
 
-  showResults(matches.slice(0,10));
+  if (matches.length > 0) {
+    foundOnce = true;
+    clearInterval(interval);
+    alertUser(matches);
+  }
 }
 
-function showResults(list) {
-  let html = "";
-  if (list.length === 0) {
-    html = "<div class='box'>❌ No matching products found</div>";
-  } else {
-    html = "<div class='box'><b>Matches found:</b><br>";
-    list.forEach(l => {
-      let id = l.match(/\d+/);
-      if (id) {
-        html += `<button onclick="openShein('${id[0]}')">
-          Open Product ${id[0]}
-        </button>`;
-      }
+function alertUser(matches) {
+  document.getElementById("beep").play();
+  if (navigator.vibrate) navigator.vibrate([300,200,300]);
+
+  if (Notification.permission === "granted") {
+    new Notification("SHEIN PRODUCT FOUND", {
+      body: "Tap to open products instantly"
     });
-    html += "</div>";
   }
+
+  let html = "";
+  matches.slice(0,10).forEach(m => {
+    html += `
+      <div class="card">
+        <div class="small">Preview (text)</div>
+        <div class="small">${m.text.substring(0,80)}...</div>
+        <button onclick="openShein('${m.id}')">
+          OPEN IN SHEIN APP
+        </button>
+      </div>`;
+  });
+
   document.getElementById("result").innerHTML = html;
+  document.getElementById("status").innerText =
+    "Match found – tap product to add instantly";
 }
 
 function openShein(id) {
