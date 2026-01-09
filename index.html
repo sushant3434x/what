@@ -5,7 +5,6 @@
 <title>SHEIN Instant Watcher</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000000">
 
@@ -20,7 +19,7 @@ button {
   background:white; padding:10px; margin-top:8px;
   border-radius:6px;
 }
-.small { font-size:13px; color:#555 }
+.counter { font-weight:bold }
 </style>
 </head>
 
@@ -30,54 +29,63 @@ button {
 
 <button onclick="toggle()">START / STOP AUTO SCAN</button>
 
-<div id="status" class="card">Waiting…</div>
+<div id="status" class="card">
+  Waiting…
+  <div id="counter" class="counter">Scans: 0</div>
+</div>
+
 <div id="result"></div>
 
 <audio id="beep">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+  <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg">
 </audio>
 
 <script>
-/* ================= SETTINGS ================= */
+/* ===== SETTINGS ===== */
 const allowedSizes = ["XL","L","28","30","32"];
 const PINCODE = "248001";
 
-/* ================= STATE ================= */
+/* ===== STATE ===== */
 let running = false;
 let interval = null;
 let foundOnce = false;
+let scanCount = 0;
 
-/* ================= PERMISSIONS ================= */
-if ("Notification" in window) {
-  Notification.requestPermission();
-}
+/* ===== PERMISSIONS ===== */
+if ("Notification" in window) Notification.requestPermission();
 
-/* ================= START / STOP ================= */
+/* ===== TOGGLE ===== */
 function toggle() {
   if (running) {
     clearInterval(interval);
     running = false;
-    document.getElementById("status").innerText = "Stopped";
+    document.getElementById("status").firstChild.textContent = "Stopped ";
   } else {
     foundOnce = false;
+    scanCount = 0;
+    updateCounter();
     interval = setInterval(scan, 1000);
     running = true;
-    document.getElementById("status").innerText =
-      "Scanning every 1s | Pincode: " + PINCODE;
+    document.getElementById("status").firstChild.textContent =
+      "Scanning every 1s | Pincode " + PINCODE + " ";
   }
 }
 
-/* ================= SCAN LOGIC ================= */
+/* ===== SCAN ===== */
 function scan() {
   if (foundOnce) return;
 
+  scanCount++;
+  updateCounter();
+
   let links = document.querySelectorAll("a");
-  let groups = { "500": [], "1000": [], "4000": [] };
+  let foundItem = null;
 
   links.forEach(a => {
+    if (foundItem) return;
+
     let text = a.innerText.toUpperCase();
 
-    // Ignore out of stock
     if (
       text.includes("OUT OF STOCK") ||
       text.includes("SOLD OUT") ||
@@ -85,95 +93,78 @@ function scan() {
     ) return;
 
     if (!text.includes("MEN")) return;
-
-    let sizeOk = allowedSizes.some(s => text.includes(s));
-    if (!sizeOk) return;
+    if (!allowedSizes.some(s => text.includes(s))) return;
 
     let priceMatch = text.match(/₹\s?(\d+)/);
-    if (!priceMatch) return;
-
-    let price = parseInt(priceMatch[1]);
     let idMatch = a.href.match(/\d+/);
-    if (!idMatch) return;
+    if (!priceMatch || !idMatch) return;
 
-    let item = { id: idMatch[0], price };
-
-    if (price <= 500) groups["500"].push(item);
-    else if (price <= 1000) groups["1000"].push(item);
-    else if (price <= 4000) groups["4000"].push(item);
+    foundItem = { id: idMatch[0], price: priceMatch[1] };
   });
 
-  if (groups["500"].length || groups["1000"].length || groups["4000"].length) {
+  if (foundItem) {
     foundOnce = true;
-    clearInterval(interval);
-    alertUser(groups);
+    clearInterval(interval);          // ⛔ AUTO STOP
+    notify(foundItem);
   }
 }
 
-/* ================= ALERT + UI ================= */
-function alertUser(groups) {
+/* ===== UI ===== */
+function updateCounter() {
+  document.getElementById("counter").innerText = "Scans: " + scanCount;
+}
+
+function notify(item) {
   document.getElementById("beep").play();
-  if (navigator.vibrate) navigator.vibrate([300,200,300]);
+  if (navigator.vibrate) navigator.vibrate([400,200,400]);
+
+  document.getElementById("status").firstChild.textContent =
+    "FOUND after " + scanCount + " scans ";
+
+  document.getElementById("result").innerHTML = `
+    <div class="card">
+      <b>₹${item.price}</b><br>
+      <button onclick="openShein('${item.id}')">
+        OPEN IN SHEIN
+      </button>
+    </div>`;
 
   if (Notification.permission === "granted") {
-    new Notification("SHEIN Match Found", {
-      body: "Products grouped by price"
+    let n = new Notification("SHEIN PRODUCT FOUND", {
+      body: "Tap to open product (₹" + item.price + ")",
+      requireInteraction: true
     });
+    n.onclick = () => window.focus();
   }
 
-  let html = "";
-  html += renderGroup("≤ ₹500", groups["500"]);
-  html += renderGroup("≤ ₹1000", groups["1000"]);
-  html += renderGroup("≤ ₹4000", groups["4000"]);
-
-  document.getElementById("result").innerHTML = html;
-  document.getElementById("status").innerText =
-    "Match found | Check delivery to " + PINCODE;
+  // ✅ AUTO OPEN if app is already open
+  setTimeout(() => {
+    if (document.visibilityState === "visible") {
+      openShein(item.id);
+    }
+  }, 800);
 }
 
-function renderGroup(title, items) {
-  if (!items.length) return "";
-  let html = `<div class="card"><b>${title}</b>`;
-  items.slice(0,5).forEach(i => {
-    html += `
-      <button onclick="confirmOpen('${i.id}', ${i.price})">
-        ₹${i.price} → OPEN IN SHEIN
-      </button>`;
-  });
-  html += "</div>";
-  return html;
-}
-
-function confirmOpen(id, price) {
-  if (
-    confirm(
-      "Price: ₹" + price +
-      "\nCheck delivery for pincode " + PINCODE +
-      "?"
-    )
-  ) {
-    window.location.href = "shein://product/" + id;
-  }
+function openShein(id) {
+  window.location.href = "shein://product/" + id;
 }
 </script>
 
-<!-- ================= STEP 3 : PWA SCRIPT ================= -->
+<!-- ===== PWA ===== -->
 <script>
-/* Service Worker */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("service-worker.js");
   });
 }
 
-/* Keep screen awake */
 let wakeLock = null;
 async function keepAwake() {
   try {
     if ("wakeLock" in navigator) {
       wakeLock = await navigator.wakeLock.request("screen");
     }
-  } catch (e) {}
+  } catch {}
 }
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") keepAwake();
