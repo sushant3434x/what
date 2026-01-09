@@ -5,6 +5,10 @@
 <title>SHEIN Instant Watcher</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+
 <style>
 body { font-family: Arial; background:#f2f2f2; padding:10px }
 h2 { text-align:center }
@@ -34,16 +38,21 @@ button {
 </audio>
 
 <script>
+/* ================= SETTINGS ================= */
 const allowedSizes = ["XL","L","28","30","32"];
+const PINCODE = "248001";
+
+/* ================= STATE ================= */
 let running = false;
 let interval = null;
 let foundOnce = false;
 
-// Ask notification permission once
+/* ================= PERMISSIONS ================= */
 if ("Notification" in window) {
   Notification.requestPermission();
 }
 
+/* ================= START / STOP ================= */
 function toggle() {
   if (running) {
     clearInterval(interval);
@@ -53,65 +62,123 @@ function toggle() {
     foundOnce = false;
     interval = setInterval(scan, 1000);
     running = true;
-    document.getElementById("status").innerText = "Scanning every 1 second…";
+    document.getElementById("status").innerText =
+      "Scanning every 1s | Pincode: " + PINCODE;
   }
 }
 
+/* ================= SCAN LOGIC ================= */
 function scan() {
   if (foundOnce) return;
 
   let links = document.querySelectorAll("a");
-  let matches = [];
+  let groups = { "500": [], "1000": [], "4000": [] };
 
   links.forEach(a => {
     let text = a.innerText.toUpperCase();
-    if (text.includes("MEN")) {
-      allowedSizes.forEach(s => {
-        if (text.includes(s)) {
-          let id = a.href.match(/\d+/);
-          if (id) matches.push({id:id[0], text:text});
-        }
-      });
-    }
+
+    // Ignore out of stock
+    if (
+      text.includes("OUT OF STOCK") ||
+      text.includes("SOLD OUT") ||
+      text.includes("UNAVAILABLE")
+    ) return;
+
+    if (!text.includes("MEN")) return;
+
+    let sizeOk = allowedSizes.some(s => text.includes(s));
+    if (!sizeOk) return;
+
+    let priceMatch = text.match(/₹\s?(\d+)/);
+    if (!priceMatch) return;
+
+    let price = parseInt(priceMatch[1]);
+    let idMatch = a.href.match(/\d+/);
+    if (!idMatch) return;
+
+    let item = { id: idMatch[0], price };
+
+    if (price <= 500) groups["500"].push(item);
+    else if (price <= 1000) groups["1000"].push(item);
+    else if (price <= 4000) groups["4000"].push(item);
   });
 
-  if (matches.length > 0) {
+  if (groups["500"].length || groups["1000"].length || groups["4000"].length) {
     foundOnce = true;
     clearInterval(interval);
-    alertUser(matches);
+    alertUser(groups);
   }
 }
 
-function alertUser(matches) {
+/* ================= ALERT + UI ================= */
+function alertUser(groups) {
   document.getElementById("beep").play();
   if (navigator.vibrate) navigator.vibrate([300,200,300]);
 
   if (Notification.permission === "granted") {
-    new Notification("SHEIN PRODUCT FOUND", {
-      body: "Tap to open products instantly"
+    new Notification("SHEIN Match Found", {
+      body: "Products grouped by price"
     });
   }
 
   let html = "";
-  matches.slice(0,10).forEach(m => {
-    html += `
-      <div class="card">
-        <div class="small">Preview (text)</div>
-        <div class="small">${m.text.substring(0,80)}...</div>
-        <button onclick="openShein('${m.id}')">
-          OPEN IN SHEIN APP
-        </button>
-      </div>`;
-  });
+  html += renderGroup("≤ ₹500", groups["500"]);
+  html += renderGroup("≤ ₹1000", groups["1000"]);
+  html += renderGroup("≤ ₹4000", groups["4000"]);
 
   document.getElementById("result").innerHTML = html;
   document.getElementById("status").innerText =
-    "Match found – tap product to add instantly";
+    "Match found | Check delivery to " + PINCODE;
 }
 
-function openShein(id) {
-  window.location.href = "shein://product/" + id;
+function renderGroup(title, items) {
+  if (!items.length) return "";
+  let html = `<div class="card"><b>${title}</b>`;
+  items.slice(0,5).forEach(i => {
+    html += `
+      <button onclick="confirmOpen('${i.id}', ${i.price})">
+        ₹${i.price} → OPEN IN SHEIN
+      </button>`;
+  });
+  html += "</div>";
+  return html;
 }
+
+function confirmOpen(id, price) {
+  if (
+    confirm(
+      "Price: ₹" + price +
+      "\nCheck delivery for pincode " + PINCODE +
+      "?"
+    )
+  ) {
+    window.location.href = "shein://product/" + id;
+  }
+}
+</script>
+
+<!-- ================= STEP 3 : PWA SCRIPT ================= -->
+<script>
+/* Service Worker */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js");
+  });
+}
+
+/* Keep screen awake */
+let wakeLock = null;
+async function keepAwake() {
+  try {
+    if ("wakeLock" in navigator) {
+      wakeLock = await navigator.wakeLock.request("screen");
+    }
+  } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") keepAwake();
+});
+keepAwake();
 </script>
 
 </body>
