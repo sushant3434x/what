@@ -4,23 +4,39 @@
 <meta charset="UTF-8">
 <title>SHEIN Smart Watcher</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000000">
 
 <style>
-body { font-family: Arial; background:#f2f2f2; padding:10px }
-h2 { text-align:center }
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  padding: 10px;
+}
+h2 { text-align: center; }
 button {
-  width:100%; padding:14px; margin:6px 0;
-  font-size:16px; background:black; color:white; border:none;
+  width: 100%;
+  padding: 14px;
+  margin: 6px 0;
+  font-size: 16px;
+  background: black;
+  color: white;
+  border: none;
+  border-radius: 6px;
 }
 .card {
-  background:white; padding:10px; margin-top:8px;
-  border-radius:6px;
+  background: white;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 6px;
 }
-.small { font-size:13px; color:#555 }
-.badge { font-size:12px; background:#eee; padding:4px }
+.small { font-size: 13px; color: #555; }
+.badge {
+  font-size: 12px;
+  background: #eee;
+  padding: 4px;
+  display: inline-block;
+  margin-top: 4px;
+}
 </style>
 </head>
 
@@ -28,16 +44,12 @@ button {
 
 <h2>SHEIN Smart Watcher</h2>
 
-<button onclick="setGender('MEN')">👕 MALE PRODUCTS</button>
-<button onclick="setGender('WOMEN')">👗 WOMEN PRODUCTS</button>
 <button onclick="toggle()">▶ START / STOP SCAN</button>
+<button onclick="show('MEN')">👕 SHOW MEN</button>
+<button onclick="show('WOMEN')">👗 SHOW WOMEN</button>
 
 <div id="status" class="card">Idle</div>
 <div id="result"></div>
-
-<audio id="beep">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
 
 <script>
 /* ================= SETTINGS ================= */
@@ -47,17 +59,16 @@ const PINCODE = "248001";
 /* ================= STATE ================= */
 let running = false;
 let interval = null;
-let foundOnce = false;
-let gender = "MEN";
+let scanCount = 0;
+
+let found = {
+  MEN: [],
+  WOMEN: []
+};
 
 /* ================= PERMISSIONS ================= */
-if ("Notification" in window) Notification.requestPermission();
-
-/* ================= GENDER ================= */
-function setGender(g) {
-  gender = g;
-  document.getElementById("status").innerText =
-    g + " selected | Pincode " + PINCODE;
+if ("Notification" in window) {
+  Notification.requestPermission();
 }
 
 /* ================= SIZE FALLBACK ================= */
@@ -79,104 +90,136 @@ function toggle() {
   if (running) {
     clearInterval(interval);
     running = false;
-    document.getElementById("status").innerText = "Stopped";
+    updateStatus("Stopped");
   } else {
-    foundOnce = false;
     interval = setInterval(scan, 1000);
     running = true;
-    document.getElementById("status").innerText =
-      "Scanning " + gender + " products…";
+    updateStatus("Scanning men & women…");
   }
+}
+
+/* ================= STATUS ================= */
+function updateStatus(msg) {
+  document.getElementById("status").innerText =
+    msg + " | Cycles: " + scanCount;
 }
 
 /* ================= SCAN ================= */
 function scan() {
   if (!navigator.onLine) {
-    document.getElementById("status").innerText =
-      "Offline – waiting for internet";
+    updateStatus("Offline – waiting for internet");
     return;
   }
 
+  scanCount++;
+  updateStatus("Scanning men & women…");
+
   let links = document.querySelectorAll("a");
-  let results = [];
 
-  links.forEach(a => {
-    let text = a.innerText.toUpperCase();
+  ["MEN","WOMEN"].forEach(gender => {
+    links.forEach(a => {
+      let text = a.innerText.toUpperCase();
 
-    if (
-      text.includes("OUT OF STOCK") ||
-      text.includes("SOLD OUT")
-    ) return;
+      if (
+        text.includes("OUT OF STOCK") ||
+        text.includes("SOLD OUT")
+      ) return;
 
-    if (!text.includes(gender)) return;
+      if (!text.includes(gender)) return;
 
-    let sizeOk = false;
-    BASE_SIZES.forEach(s => {
-      sizeVariants(s).forEach(v => {
-        if (text.includes(v)) sizeOk = true;
+      let sizeOk = false;
+      BASE_SIZES.forEach(s =>
+        sizeVariants(s).forEach(v => {
+          if (text.includes(v)) sizeOk = true;
+        })
+      );
+      if (!sizeOk) return;
+
+      let priceMatch = text.match(/₹\s?(\d+)/);
+      let idMatch = a.href.match(/\d+/);
+      if (!priceMatch || !idMatch) return;
+
+      let id = idMatch[0];
+      let price = parseInt(priceMatch[1]);
+
+      if (found[gender].some(p => p.id === id)) return;
+
+      found[gender].push({
+        id, price, text: text.substring(0,80)
       });
-    });
-    if (!sizeOk) return;
 
-    let price = text.match(/₹\s?(\d+)/);
-    let id = a.href.match(/\d+/);
-    if (!price || !id) return;
-
-    results.push({
-      id: id[0],
-      price: price[1],
-      text: text.substring(0,80)
+      notify(gender);
     });
   });
-
-  if (results.length) {
-    clearInterval(interval);
-    running = false;
-    notify(results);
-  } else {
-    document.getElementById("status").innerText =
-      "No " + gender + " product found yet…";
-  }
 }
 
-/* ================= NOTIFY + UI ================= */
-function notify(items) {
-  document.getElementById("beep").play();
-  if (navigator.vibrate) navigator.vibrate([300,200,300]);
+/* ================= NOTIFY ================= */
+function notify(gender) {
+  let sound = gender === "MEN"
+    ? "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+    : "https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg";
+
+  new Audio(sound).play();
+  if (navigator.vibrate) navigator.vibrate([200,100,200]);
 
   if (Notification.permission === "granted") {
     new Notification(gender + " product found", {
-      body: items.length + " item(s) matched"
+      body: "Tap to view results"
     });
   }
+}
 
-  let html = `<div class="card"><b>${gender} PRODUCTS</b><br>
-              <span class="badge">Check delivery to ${PINCODE}</span></div>`;
+/* ================= PRICE GROUP ================= */
+function groupByPrice(items) {
+  return {
+    under500: items.filter(p => p.price < 500),
+    under1000: items.filter(p => p.price >= 500 && p.price < 1000),
+    under4000: items.filter(p => p.price >= 1000 && p.price <= 4000)
+  };
+}
 
-  items.forEach(i => {
-    html += `
-      <div class="card">
-        <div class="small">${i.text}…</div>
-        <button onclick="openShein('${i.id}')">
-          ₹${i.price} → OPEN IN SHEIN
-        </button>
-      </div>`;
-  });
+/* ================= SHOW ================= */
+function show(gender) {
+  let items = found[gender];
+  if (!items.length) {
+    document.getElementById("result").innerHTML =
+      `<div class="card">No ${gender} products found yet</div>`;
+    return;
+  }
+
+  let g = groupByPrice(items);
+  let html = `
+    <div class="card">
+      <b>${gender} PRODUCTS</b><br>
+      <span class="badge">Delivery checked in SHEIN (Pincode ${PINCODE})</span>
+    </div>
+  `;
+
+  function render(title, list) {
+    if (!list.length) return "";
+    let h = `<div class="card"><b>${title}</b></div>`;
+    list.forEach(i => {
+      h += `
+        <div class="card">
+          <div class="small">${i.text}…</div>
+          <button onclick="openShein('${i.id}')">
+            ₹${i.price} → OPEN IN SHEIN
+          </button>
+        </div>`;
+    });
+    return h;
+  }
+
+  html += render("🟢 Under ₹500", g.under500);
+  html += render("🔵 ₹500 – ₹1000", g.under1000);
+  html += render("🟣 ₹1000 – ₹4000", g.under4000);
 
   document.getElementById("result").innerHTML = html;
-  document.getElementById("status").innerText =
-    gender + " product(s) found";
 }
 
+/* ================= OPEN SHEIN ================= */
 function openShein(id) {
   window.location.href = "shein://product/" + id;
-}
-</script>
-
-<!-- ================= PWA ================= -->
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
 }
 </script>
 
